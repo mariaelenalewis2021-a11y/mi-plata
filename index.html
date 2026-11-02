@@ -120,6 +120,14 @@ input[type=range]{width:100%;accent-color:#ec4899}
 .badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;background:#fce7f3;color:#9d174d}
 .badge.g{background:#ccfbf1;color:#115e59}.badge.w{background:#fef3c7;color:#92400e}
 .scroll{overflow-x:auto}
+.pago{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line)}
+.pago:last-child{border-bottom:0}
+.pago .fecha{width:46px;text-align:center;border-radius:12px;padding:4px 0;background:var(--bg);flex:none}
+.pago .fecha b{display:block;font-size:18px;line-height:1.1}
+.pago .fecha span{font-size:10px;text-transform:uppercase;color:var(--mut)}
+.pago.venc .fecha{background:var(--egr-s)}.pago.pronto .fecha{background:var(--warn-s)}.pago.ok .fecha{background:var(--ing-s)}
+.pago .tx{flex:1;min-width:0}.pago .tx b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pago .acc{display:flex;gap:6px;flex:none}
 .fiesta{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.92),rgba(253,242,248,.85) 45%,rgba(124,58,237,.35));backdrop-filter:blur(2px);animation:fIn .25s ease;cursor:pointer;overflow:hidden}
 .fiesta .caja{text-align:center;position:relative;z-index:2}
 .fiesta svg{width:min(56vw,230px);height:auto;animation:salta .55s ease-in-out infinite alternate;filter:drop-shadow(0 12px 18px rgba(219,39,119,.35))}
@@ -211,7 +219,7 @@ if (window.top !== window.self) { document.documentElement.style.display = "none
    artifact de Claude; si no, en este dispositivo (localStorage).
    Sin innerHTML con datos: todo se pinta con textContent.
    ============================================================ */
-const VERSION = "1.7";
+const VERSION = "1.8";
 const LS_TOK = "miplata.tok", LS_CACHE = "miplata.cache", LS_COLA = "miplata.cola", LS_ACT = "miplata.act", LS_HUELLA = "miplata.huella";
 const LS_KEY = "miplata.v1";
 const LS_UI = "miplata.ui";
@@ -506,6 +514,7 @@ async function sincronizar() {
     S.meses = nuevos; S.cfg = cfgN;
     S.ultimaSync = Date.now(); guardarCache();
     estado("Guardado en tu Drive privado", true); if (cambio) renderFondo();
+    avisarPagos();
   } catch (e) {
     if (e.code === "AUTH") return mostrarLogin();
     estado(S.ultimaSync || Object.keys(S.meses).length ? "Sin conexión: mostrando lo último guardado en este equipo" : "No se pudo conectar con el servidor", false);
@@ -877,6 +886,7 @@ function vHoy(app) {
   const t = hoy();
   if (Instalar.mostrar() && !S._instalarVisto) { const ti = tarjetaInstalar(); if (ti) { ti.append(h("button", { class: "icobtn", type: "button", "aria-label": "Ocultar", style: "background:transparent;color:var(--mut);width:28px", text: "✕", onclick: () => { S._instalarVisto = true; guardarUI({ instalarVisto: true }); render(); } })); app.append(ti); } }
   app.append(tarjetaResumen(mesDe(t)));
+  const tp = tarjetaPagos(); if (tp) app.append(tp);
   if (S.modo === "api" && !Huella.activa() && !S._huellaVisto) {
     const ph = h("div");
     Huella.soportada().then(ok => { if (!ok) return; ph.append(h("section", { class: "card mp", style: "display:flex;gap:12px;align-items:center" }, h("div", { style: "font-size:32px", text: "👆" }),
@@ -951,8 +961,8 @@ function vHoy(app) {
     h("h2", {}, "Hoy", h("small", { class: "money", text: L.length ? `entró ${money(tI)} · salió ${money(tE)}` : "" })),
     L.length ? h("ul", { class: "list" }, L.map(filaMov)) : h("p", { class: "empty", text: "Todavía no cargaste nada hoy." })));
 
-  const pend = fijosPendientes(mesDe(t));
-  if (pend.length) app.append(tarjetaFijos(mesDe(t), pend));
+  const pendI = fijosPendientes(mesDe(t)).filter(f => f.t === "i");
+  if (pendI.length) app.append(tarjetaFijos(mesDe(t), pendI));
 }
 function filaMov(x) {
   return h("li", { class: "mv", tabindex: "0", role: "button", "aria-label": `${x.t === "e" ? "Gasto" : "Ingreso"} ${x.c} ${money(x.m)}. Tocar para editar`, onclick: () => editar(x), onkeydown: e => { if (e.key === "Enter") editar(x); } },
@@ -1047,7 +1057,25 @@ function vMes(app) {
     app.append(h("section", { class: "card" }, h("h2", {}, "💳 Cuotas que vienen", h("small", { text: "ya comprometido" })),
       h("table", { class: "t" }, Object.keys(pm).sort().slice(0, 6).map(k => h("tr", {}, h("td", { text: nombreMes(k) }), h("td", { class: "money", text: money(pm[k]) }))))));
   }
-  const pend = fijosPendientes(m); if (pend.length && m >= mesDe(hoy())) app.append(tarjetaFijos(m, pend));
+  if (m === mesDe(hoy())) {
+    const A = agendaPagos(m), det = A.filter(a => a.tipo === "auto");
+    if (A.length) app.append(h("section", { class: "card" },
+      h("h2", {}, "🔁 Pagos de todos los meses", h("small", { text: `${A.filter(a => a.pagado).length} de ${A.length} pagados` })),
+      A.map(a => {
+        const f = filaPago(a, true);
+        const bp = f.querySelector(".acc button"); if (bp) { bp.textContent = "✓"; bp.title = "Pagué"; bp.setAttribute("aria-label", "Pagué " + a.nombre); }
+        if (a.tipo === "auto") {
+          const hist = a.rec.historial.map(x => (+x.f.slice(8, 10)) + "/" + (+x.f.slice(5, 7)) + " " + moneyK(x.m)).join(" · ");
+          f.querySelector(".tx").append(h("div", { class: "hint", style: "font-size:11px", text: "Antes: " + hist }));
+          const acc = f.querySelector(".acc") || f.appendChild(h("div", { class: "acc" }));
+          acc.append(h("button", { class: "btn sm", type: "button", title: "Convertir en gasto fijo", text: "📌", onclick: () => hacerFijo(a) }),
+            h("button", { class: "btn sm", type: "button", title: "No es un pago fijo", text: "✕", onclick: () => ignorarPago(a) }));
+        }
+        return f;
+      }),
+      det.length ? h("p", { class: "hint", style: "margin-top:6px", text: "«detectado» = lo encontré repetido en tus meses anteriores. 📌 lo convierte en fijo (entra en el Proyectado); ✕ si no es un pago mensual." }) : null));
+    const pendI = fijosPendientes(m).filter(f => f.t === "i"); if (pendI.length) app.append(tarjetaFijos(m, pendI));
+  }
 }
 function vs(a, b) { const p = Math.round((a / b - 1) * 100); return (p >= 0 ? "▲ +" : "▼ ") + p + " % vs. mes anterior"; }
 function vsCorto(a, b) { const p = Math.round((a / b - 1) * 100); return (p >= 0 ? "+" : "") + p + " %"; }
@@ -1472,6 +1500,131 @@ function exportarCSV(m) {
   L.forEach(x => filas.push([x.f.split("-").reverse().join("/"), x.t === "i" ? "Ingreso" : "Egreso", x.c, x.p, x.n || "", x.t === "i" ? num(x.m) : "", x.t === "e" ? num(x.m) : "", num(x.t === "i" ? x.m : -x.m), x.d ? num(x.d) : "", x.q || "", x.fx ? "Sí" : ""]));
   const csv = "﻿" + "sep=;\n" + filas.map(r => r.map((v, i) => i >= 5 && i <= 8 ? v : esc(v)).join(";")).join("\r\n");
   descargar(`MiPlata_${m || "historial"}_${sello()}.csv`, csv, "text/csv;charset=utf-8");
+}
+
+/* ============================================================
+   PAGOS MENSUALES: detecta lo que se repite y avisa qué toca pagar
+   ============================================================ */
+const CAT_FIJAS = new Set(["Servicios", "Hogar y alquiler", "Suscripciones", "Impuestos", "Salud", "Educación", "Tarjeta (pago)", "Mascotas", "Auto y nafta"]);
+const STOP = new Set(["pago", "pague", "para", "con", "del", "los", "las", "mes", "mensual", "cuota", "por", "una", "uno", "mp", "debito", "credito", "efectivo", "transf", "transferencia"]);
+function clavePago(x) {
+  const w = norm(x.n).replace(/[^a-z ]/g, " ").split(/\s+/).filter(t => t.length > 2 && !STOP.has(t)).slice(0, 2).join(" ");
+  if (w) return w + "|" + x.c;
+  return CAT_FIJAS.has(x.c) ? "#" + x.c + "|" + x.p : null;
+}
+function uiLeer() { try { return JSON.parse(localStorage.getItem(LS_UI) || "{}"); } catch (e) { return {}; } }
+/** Pagos que aparecen todos los meses (últimos 4 meses cerrados), con fecha y monto esperados. */
+function recurrentes() {
+  const hm = mesDe(hoy()), meses = [1, 2, 3, 4].map(k => sumMes(hm, -k)), G = {};
+  meses.forEach(m => itemsMes(m).forEach(x => {
+    if (x.t !== "e" || x.q || x.fx) return; const k = clavePago(x); if (!k) return;
+    (G[k] = G[k] || []).push(x);
+  }));
+  const ignorados = new Set(uiLeer().pagosIgnorados || []);
+  const nomFijos = S.cfg.fijos.map(f => norm(f.n));
+  const out = [];
+  for (const k in G) {
+    if (ignorados.has(k)) continue;
+    const L = G[k].sort((a, b) => a.f.localeCompare(b.f));
+    const porMes = {}; L.forEach(x => { const m = mesDe(x.f); porMes[m] = porMes[m] || []; porMes[m].push(x); });
+    const ms = Object.keys(porMes).sort();
+    const minMeses = k.startsWith("#") ? 3 : 2;
+    if (ms.length < minMeses) continue;
+    if (!porMes[meses[0]] && !porMes[meses[1]]) continue;           // tiene que estar vigente (último o anteúltimo mes)
+    if (ms.some(m => porMes[m].length > 2)) continue;                // más de 2 veces por mes = gasto variable, no fijo
+    const ult = ms.map(m => porMes[m][porMes[m].length - 1]);
+    const montos = ult.map(x => x.m), mx = Math.max(...montos), mn = Math.min(...montos);
+    if (mx / mn > 1.8) continue;                                     // montos muy distintos = no es un pago fijo
+    const dias = ult.map(x => +x.f.slice(8, 10)).sort((a, b) => a - b);
+    if (dias[dias.length - 1] - dias[0] > 10) continue;              // fechas muy desparramadas
+    const nombre = (ult[ult.length - 1].n || ult[ult.length - 1].c).replace(/^./, c => c.toUpperCase());
+    if (nomFijos.some(f => f && (norm(nombre).includes(f) || f.includes(k.split("|")[0])))) continue; // ya es un fijo cargado
+    const dia = dias[Math.floor(dias.length / 2)];
+    const monto = Math.round(montos.slice(-2).reduce((a, b) => a + b, 0) / Math.min(2, montos.length));
+    out.push({ k, nombre, c: ult[ult.length - 1].c, p: ult[ult.length - 1].p, dia, monto, ultimo: ult[ult.length - 1], historial: ult.slice(-4), meses: ms.length });
+  }
+  return out.sort((a, b) => a.dia - b.dia);
+}
+/** Agenda del mes: fijos cargados + pagos detectados, con estado. */
+function agendaPagos(m) {
+  m = m || mesDe(hoy());
+  const t = hoy(), L = itemsMes(m), dm = diasDelMes(m), A = [];
+  S.cfg.fijos.filter(f => f.t !== "i").forEach(f => {
+    const it = L.find(x => x.fx === f.id);
+    A.push({ tipo: "fijo", id: f.id, nombre: f.n, c: f.c, p: f.p, monto: f.m, dia: Math.min(f.dia || 1, dm), pagado: it || null, fj: f });
+  });
+  recurrentes().forEach(r => {
+    const it = L.find(x => x.t === "e" && !x.q && clavePago(x) === r.k);
+    A.push({ tipo: "auto", id: r.k, nombre: r.nombre, c: r.c, p: r.p, monto: r.monto, dia: Math.min(r.dia, dm), pagado: it || null, rec: r });
+  });
+  A.forEach(a => {
+    a.fecha = m + "-" + pad(a.dia);
+    a.dif = Math.round((new Date(a.fecha + "T12:00:00") - new Date(t + "T12:00:00")) / 864e5);
+    a.estado = a.pagado ? "ok" : a.dif < 0 ? "venc" : a.dif <= 3 ? "pronto" : "";
+  });
+  return A.sort((a, b) => a.dia - b.dia);
+}
+function textoVence(a) {
+  if (a.pagado) return "Pagado el " + (+a.pagado.f.slice(8, 10)) + "/" + (+a.pagado.f.slice(5, 7)) + " · " + money(a.pagado.m);
+  if (a.dif < 0) return "Vencido hace " + (-a.dif) + (a.dif === -1 ? " día" : " días");
+  if (a.dif === 0) return "Vence hoy";
+  if (a.dif === 1) return "Vence mañana";
+  return "En " + a.dif + " días";
+}
+function pagarAgenda(a) {
+  const it = armarAlta({ t: "e", m: a.monto, c: a.c, p: a.p, f: hoy(), n: a.nombre, fx: a.tipo === "fijo" ? a.id : undefined });
+  agregarItems(it).then(() => toast("Registrado: " + a.nombre + " · " + money(a.monto) + " (tocá el movimiento si el monto cambió)", 4500)).catch(() => {});
+}
+function hacerFijo(a) {
+  S.cfg.fijos.push({ id: uid(), t: "e", n: a.nombre, m: a.monto, c: a.c, p: a.p, dia: a.dia });
+  Store.guardarCfg(); render(); toast("«" + a.nombre + "» ahora es un gasto fijo (día " + a.dia + ")");
+}
+function ignorarPago(a) {
+  const u = uiLeer(); const L = new Set(u.pagosIgnorados || []); L.add(a.id); guardarUI({ pagosIgnorados: [...L] });
+  render(); toast("Listo, no lo vuelvo a sugerir en este equipo");
+}
+function filaPago(a, conAcciones) {
+  const d = new Date(a.fecha + "T12:00:00");
+  return h("div", { class: "pago " + a.estado },
+    h("div", { class: "fecha" }, h("b", { text: String(a.dia) }), h("span", { text: MESES[d.getMonth()].slice(0, 3) })),
+    h("div", { class: "tx" }, h("b", { text: a.nombre }),
+      h("div", { class: "hint", text: textoVence(a) + (a.pagado ? "" : " · " + money(a.monto)) + (a.tipo === "auto" ? " · detectado" : " · fijo") })),
+    conAcciones && !a.pagado ? h("div", { class: "acc" },
+      h("button", { class: "btn sm", type: "button", text: "✓ Pagué", onclick: () => pagarAgenda(a) })) : null);
+}
+function tarjetaPagos() {
+  const A = agendaPagos(), pend = A.filter(a => !a.pagado);
+  if (!pend.length) return null;
+  const total = pend.reduce((s, a) => s + a.monto, 0), venc = pend.filter(a => a.estado === "venc").length, pronto = pend.filter(a => a.estado === "pronto").length;
+  const dia = +hoy().slice(8, 10), mesN = MESES[+hoy().slice(5, 7) - 1];
+  const titulo = dia <= 5 ? `📅 Arrancó ${mesN}: tenés ${pend.length} pago${pend.length > 1 ? "s" : ""} por ${moneyK(total)}` : `📅 Te falta pagar en ${mesN}: ${moneyK(total)}`;
+  const sub = [venc ? `${venc} vencido${venc > 1 ? "s" : ""}` : null, pronto ? `${pronto} vence${pronto > 1 ? "n" : ""} en 3 días` : null].filter(Boolean).join(" · ");
+  return h("section", { class: "card", style: venc ? "border-color:#fda4af" : "" },
+    h("h2", {}, titulo, sub ? h("small", { text: sub }) : null),
+    pend.slice(0, 6).map(a => filaPago(a, true)),
+    pend.length > 6 ? h("p", { class: "hint", text: `y ${pend.length - 6} más en la pestaña Mes.` }) : null,
+    h("p", { class: "hint", style: "margin-top:6px", text: "Las fechas salen de cuándo los pagaste los meses anteriores. «✓ Pagué» lo registra con el monto habitual." }),
+    ("Notification" in window && Notification.permission === "default") ? h("button", { class: "btn sm", type: "button", style: "margin-top:8px", text: "🔔 Avisarme cuando esté por vencer", onclick: activarAvisos }) : null);
+}
+
+/** Aviso del sistema (una vez por día) cuando hay pagos vencidos o que vencen en 2 días. Funciona al abrir la app. */
+async function avisarPagos() {
+  try {
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
+    const u = uiLeer(); if (u.avisoDia === hoy()) return;
+    const A = agendaPagos().filter(a => !a.pagado && a.dif <= 2); if (!A.length) return;
+    guardarUI({ avisoDia: hoy() });
+    const cuerpo = A.slice(0, 4).map(a => `${a.nombre}: ${textoVence(a).toLowerCase()} (${moneyK(a.monto)})`).join("\n");
+    const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
+    const op = { body: cuerpo, icon: "icon-192.png", badge: "icon-192.png", tag: "miplata-pagos" };
+    if (reg) reg.showNotification("🌸 Mi Plata · pagos para no olvidar", op); else new Notification("🌸 Mi Plata · pagos para no olvidar", op);
+  } catch (e) {}
+}
+async function activarAvisos() {
+  if (!("Notification" in window)) { toast("Este navegador no permite notificaciones."); return; }
+  const r = await Notification.requestPermission();
+  if (r === "granted") { guardarUI({ avisoDia: "" }); toast("¡Listo! Te aviso cuando un pago esté por vencer 🔔"); avisarPagos(); render(); }
+  else toast("No se activaron los avisos (podés habilitarlos desde los permisos del celu).", 4000);
 }
 
 /* ---------- festejo al entrar plata (personaje original «Florcita») ---------- */
