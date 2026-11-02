@@ -24,3 +24,9 @@ En el editor de Apps Script: ejecutar `resetearPin()` y después `prepararMiPlat
 - La TNA sale del valor de cuotaparte de **Mercado Fondo – Clase A** (el fondo donde Mercado Pago invierte los saldos), publicado por la CNV y leído de la API pública ArgentinaDatos: variación de los últimos ~30 días anualizada, con capitalización diaria. Se puede pisar a mano.
 - La pestaña **Proyectado** suma ingresos y gastos fijos, cuotas ya comprometidas, el gasto del día a día (promedio de los últimos meses) y el rendimiento de MP, mes a mes, con escenario de recorte.
 - Compara el rendimiento mensual contra la última inflación del INDEC (misma API).
+
+## Capa extra de seguridad (1.3)
+- Bloqueo con PIN al volver a la app (por defecto tras 5 min sin uso; configurable por equipo). 5 PIN incorrectos en la pantalla de bloqueo cierran todas las sesiones.
+- Registro de accesos visible en Ajustes → Seguridad (ingresos, bloqueos, cierres), sin montos.
+- Anti‑clickjacking (no se deja mostrar dentro de marcos ajenos), CSP estricta, sin referer, sin terceros.
+- La sincronización de fondo nunca pisa cambios sin subir ni lo que estás escribiendo.

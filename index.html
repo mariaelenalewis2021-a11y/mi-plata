@@ -167,14 +167,16 @@ table.t td:last-child{text-align:right;white-space:nowrap}
 
 <script>
 "use strict";
+/* Anti-clickjacking: la app nunca se muestra dentro de un marco ajeno. */
+if (window.top !== window.self) { document.documentElement.style.display = "none"; try { window.top.location = window.self.location.href; } catch (e) {} }
 /* ============================================================
    Mi Plata — app personal de ingresos y egresos
    Datos: nube privada (solo el dueño) cuando se abre como
    artifact de Claude; si no, en este dispositivo (localStorage).
    Sin innerHTML con datos: todo se pinta con textContent.
    ============================================================ */
-const VERSION = "1.2";
-const LS_TOK = "miplata.tok", LS_CACHE = "miplata.cache", LS_COLA = "miplata.cola";
+const VERSION = "1.3";
+const LS_TOK = "miplata.tok", LS_CACHE = "miplata.cache", LS_COLA = "miplata.cola", LS_ACT = "miplata.act";
 const LS_KEY = "miplata.v1";
 const LS_UI = "miplata.ui";
 
@@ -435,10 +437,12 @@ async function sincronizar() {
   if (Cola.lista.length) return Cola.vaciar();
   try {
     const d = await Api.llamar({ accion: "datos" });
-    S.meses = deItems(d.items);
-    if (d.cfg) S.cfg = Object.assign(JSON.parse(JSON.stringify(CFG_DEF)), sanearCfg(d.cfg));
+    if (Cola.lista.length || Cola.corriendo) return Cola.vaciar(); // hubo cambios mientras leía: no pisar lo local
+    const nuevos = deItems(d.items), cfgN = d.cfg ? Object.assign(JSON.parse(JSON.stringify(CFG_DEF)), sanearCfg(d.cfg)) : S.cfg;
+    const cambio = JSON.stringify([nuevos, cfgN]) !== JSON.stringify([S.meses, S.cfg]);
+    S.meses = nuevos; S.cfg = cfgN;
     S.ultimaSync = Date.now(); guardarCache();
-    estado("Guardado en tu Drive privado", true); render();
+    estado("Guardado en tu Drive privado", true); if (cambio) renderFondo();
   } catch (e) {
     if (e.code === "AUTH") return mostrarLogin();
     estado(S.ultimaSync || Object.keys(S.meses).length ? "Sin conexión: mostrando lo último guardado en este equipo" : "No se pudo conectar con el servidor", false);
@@ -449,8 +453,42 @@ async function iniciarApi() {
   try { const c = JSON.parse(localStorage.getItem(LS_CACHE) || "null"); if (c) { S.meses = c.meses || {}; if (c.cfg) S.cfg = Object.assign(JSON.parse(JSON.stringify(CFG_DEF)), c.cfg); } } catch (e) {}
   Cola.cargar();
   if (!Api.tok()) return mostrarLogin();
-  render();
+  if (debeBloquear()) { bloquear(); Cola.vaciar(); return; }
+  marcarActividad(); render();
   await Cola.vaciar(); await sincronizar();
+}
+/* ---------- bloqueo con PIN al volver a la app ---------- */
+function minutosBloqueo() { try { const u = JSON.parse(localStorage.getItem(LS_UI) || "{}"); return u.bloqueo == null ? 5 : +u.bloqueo; } catch (e) { return 5; } }
+function marcarActividad() { try { localStorage.setItem(LS_ACT, String(Date.now())); } catch (e) {} }
+function debeBloquear() {
+  const min = minutosBloqueo(); if (!min) return false;
+  let t = 0; try { t = +localStorage.getItem(LS_ACT) || 0; } catch (e) {}
+  return Date.now() - t > min * 60000;
+}
+function bloquear() { if (S.modo !== "api") return; S.modo = "bloqueo"; cerrar(); estado("Bloqueada · ingresá tu PIN", false); render(); }
+function vBloqueo(app) {
+  const pin = h("input", { class: "f", type: "password", inputmode: "numeric", autocomplete: "current-password", maxlength: "8", placeholder: "PIN", "aria-label": "PIN", style: "font-size:24px;letter-spacing:.3em;text-align:center" });
+  const btn = h("button", { class: "btn pri", type: "button", style: "margin-top:12px", text: "Desbloquear" });
+  const ir = async () => {
+    if (!/^\d{6,8}$/.test(pin.value.trim())) { toast("El PIN tiene de 6 a 8 números."); return; }
+    btn.disabled = true; btn.textContent = "Verificando…";
+    try {
+      await Api.llamar({ accion: "desbloquear", pin: pin.value.trim() });
+      S.modo = "api"; marcarActividad(); render(); await Cola.vaciar(); await sincronizar();
+    } catch (e) {
+      btn.disabled = false; btn.textContent = "Desbloquear"; pin.value = "";
+      if (e.code === "AUTH") { Api.setTok(""); try { localStorage.removeItem(LS_CACHE); } catch (x) {} S.meses = {}; return mostrarLogin(e.message); }
+      toast(e.code === "RED" ? "Sin conexión: para desbloquear hace falta internet." : e.message, 4000); pin.focus();
+    }
+  };
+  pin.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); ir(); } });
+  btn.addEventListener("click", ir);
+  app.append(h("section", { class: "card", style: "text-align:center;padding:26px 18px" },
+    document.getElementById("tplFlor").content.cloneNode(true),
+    h("h2", { style: "font-size:20px;margin:6px 0", text: "Mi Plata está bloqueada" }),
+    h("p", { class: "hint", text: "Por seguridad, la app pide tu PIN cuando la volvés a abrir. 5 intentos fallidos cierran todas las sesiones." }),
+    pin, btn));
+  setTimeout(() => pin.focus(), 50);
 }
 async function mostrarLogin(msg) {
   S.modo = "login"; S.loginMsg = msg || ""; S.alta = false;
@@ -469,7 +507,7 @@ function vLogin(app) {
     btn.disabled = true; btn.textContent = "Verificando…";
     try {
       const r = await Api.llamar({ accion: S.alta ? "configurarPin" : "login", pin: v, disp: dispositivo() }, false);
-      Api.setTok(r.token); S.modo = "api"; toast(S.alta ? "PIN creado. ¡Listo!" : "Hola de nuevo 👋");
+      Api.setTok(r.token); S.modo = "api"; marcarActividad(); toast(S.alta ? "PIN creado. ¡Listo!" : "Hola de nuevo 👋");
       render(); await Cola.vaciar(); await sincronizar();
     } catch (e) { btn.disabled = false; btn.textContent = S.alta ? "Crear mi PIN y entrar" : "Entrar"; pin.value = ""; pin2.value = ""; toast(e.code === "RED" ? "Sin conexión con el servidor." : e.message, 4000); pin.focus(); }
   };
@@ -621,12 +659,25 @@ function consejos(m) {
    VISTAS
    ============================================================ */
 const PALETA = ["#ec4899","#f97316","#8b5cf6","#14b8a6","#facc15","#f43f5e","#06b6d4","#a855f7","#84cc16","#fb923c","#e879f9","#94a3b8"];
+/** Render de fondo (sincronización, dato de MP): no borra lo que estás escribiendo. */
+function renderFondo() {
+  const a = document.activeElement;
+  const escribiendo = a && $("#app").contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName);
+  const conTexto = [...document.querySelectorAll("#app input:not([type=range]):not([type=date]):not([type=file]), #app textarea")].some(x => x.value && x.defaultValue !== x.value);
+  if (escribiendo || conTexto || $("#dlg").open) {
+    if (!S._pend) { S._pend = true; const f = () => { S._pend = false; renderFondo(); }; setTimeout(function esperar() { const b = document.activeElement; if (b && $("#app").contains(b) && /^(INPUT|TEXTAREA|SELECT)$/.test(b.tagName) || $("#dlg").open) return setTimeout(esperar, 1500); f(); }, 1500); }
+    return;
+  }
+  render();
+}
 function render() {
   const app = $("#app"); const y = window.scrollY;
   app.textContent = "";
   document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === S.tab));
-  $("nav.tabs").classList.toggle("hidden", S.modo === "login");
+  $("nav.tabs").classList.toggle("hidden", S.modo === "login" || S.modo === "bloqueo");
+  $("#btnOjo").classList.toggle("hidden", S.modo === "login" || S.modo === "bloqueo");
   if (S.modo === "login") { vLogin(app); return; }
+  if (S.modo === "bloqueo") { vBloqueo(app); return; }
   ({ hoy: vHoy, mes: vMes, proy: vProy, movs: vMovs, ajustes: vAjustes })[S.tab](app);
   window.scrollTo(0, y);
 }
@@ -1018,7 +1069,7 @@ function vProy(app) {
       const filas = [["Mes", "Ingresos", "Egresos", "Ahorro", "Rendimiento MP", "Saldo MP"], ...P.filas.map(f => [(f.resto ? "resto de " : "") + nombreMes(f.m), num(f.ing), num(f.egr), num(f.ah), num(f.r), num(f.saldo)])];
       descargar(`MiPlata_proyectado_${sello()}.csv`, "﻿sep=;\n" + filas.map(r => r.join(";")).join("\r\n") + `\r\n\r\nTNA usada;${num(tna)}\r\nRecorte;${recorte} %\r\nParte del ahorro en MP;${pctMP} %\r\n`, "text/csv;charset=utf-8");
     } })));
-  if (!Rend.dato && !Rend.cargando && !(+C.tnaManual > 0)) Rend.obtener().then(() => { if (S.tab === "proy") render(); });
+  if (!Rend.dato && !Rend.cargando && !(+C.tnaManual > 0)) Rend.obtener().then(() => { if (S.tab === "proy") renderFondo(); });
 }
 
 /* ---------- edición ---------- */
@@ -1147,6 +1198,22 @@ function vAjustes(app) {
       const ms = Object.keys(S.meses); S.meses = {}; render(); await Promise.resolve(Store.op({ accion: "borrarTodo", confirmar: "BORRAR" }, ms)).catch(() => {}); toast("Movimientos borrados");
     } })),
     h("p", { class: "hint", style: "margin-top:12px", text: `Mi Plata ${VERSION} · ${S.modo === "api" ? "Drive privado + PIN" : S.modo === "nube" ? "nube privada (solo el dueño)" : "modo local"} · sin publicidad, sin terceros.` })));
+  if (S.modo === "api") {
+    const selB = h("select", { class: "f", "aria-label": "Pedir PIN al volver" }, [[1, "1 minuto"], [5, "5 minutos"], [15, "15 minutos"], [60, "1 hora"], [0, "Nunca (no recomendado)"]].map(([v, t]) => h("option", { value: v, text: t, selected: minutosBloqueo() === v })));
+    selB.addEventListener("change", () => { guardarUI({ bloqueo: +selB.value }); toast(+selB.value ? "Listo: pide PIN tras " + selB.options[selB.selectedIndex].text + " sin uso" : "Bloqueo desactivado en este equipo"); });
+    const act = h("ul", { class: "list" }, h("li", { class: "hint", text: "Cargando accesos…" }));
+    Api.llamar({ accion: "actividad" }).then(r => {
+      act.textContent = "";
+      const nom = { login: "🔓 Ingreso con PIN", bloqueo: "⛔ Bloqueo por intentos fallidos", pin_configurado: "🔐 PIN creado", logout: "🚪 Cierre de sesión", reset_pin: "♻️ PIN reseteado desde el editor", borrar_todo: "🗑️ Borrado de movimientos" };
+      if (!r.eventos.length) act.append(h("li", { class: "hint", text: "Sin eventos todavía." }));
+      r.eventos.forEach(e => act.append(h("li", { class: "mv", style: "cursor:default" }, h("div", { class: "tx" }, h("div", { class: "t1", text: nom[e.a] || e.a }), h("div", { class: "t2", text: e.f + (e.d ? " · " + e.d : "") })))));
+    }).catch(() => { act.textContent = ""; act.append(h("li", { class: "hint", text: "No se pudo leer la actividad." })); });
+    app.append(h("section", { class: "card" }, h("h2", { text: "🛡️ Seguridad" }),
+      h("div", { class: "grid2", style: "align-items:center" }, h("b", { text: "Pedir PIN al volver después de" }), selB),
+      h("button", { class: "btn sm", type: "button", style: "margin-top:8px", text: "🔒 Bloquear ahora", onclick: bloquear }),
+      h("div", { class: "lbl", text: "Últimos accesos (revisá que todos sean tuyos)" }), act,
+      h("p", { class: "hint", style: "margin-top:8px", text: "Tu PIN nunca se guarda en el teléfono ni viaja en claro a ningún lado distinto de tu servidor; en el servidor solo queda una huella cifrada. Si ves un acceso que no reconocés: «Cerrar en todos los equipos»." })));
+  }
   if (S.modo === "api") app.append(h("section", { class: "card" }, h("h2", { text: "🔐 Sesión" }),
     h("p", { class: "hint", text: `Este equipo (${dispositivo()}) queda recordado 30 días sin uso.` + (Cola.lista.length ? ` Hay ${Cola.lista.length} cambios esperando conexión.` : "") }),
     h("div", { class: "row" },
@@ -1212,9 +1279,15 @@ $("#dlg").addEventListener("click", e => { if (e.target.id === "dlg") cerrar(); 
 const d0 = new Date(); $("#hdrSub").textContent = DIAS[d0.getDay()] + " " + d0.getDate() + " de " + MESES[d0.getMonth()];
 render();
 Store.iniciar();
-Rend.obtener().then(() => { if (S.modo !== "login") render(); });
+Rend.obtener().then(() => { if (S.modo === "api" || S.modo === "local" || S.modo === "nube") renderFondo(); });
 window.addEventListener("online", () => { if (S.modo === "api") Cola.vaciar().then(sincronizar); });
-document.addEventListener("visibilitychange", () => { if (!document.hidden && S.modo === "api" && Date.now() - (S.ultimaSync || 0) > 60000) sincronizar(); });
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) { if (S.modo === "api") marcarActividad(); return; }
+  if (S.modo === "api" && debeBloquear()) return bloquear();
+  if (S.modo === "api") { marcarActividad(); if (Date.now() - (S.ultimaSync || 0) > 60000) sincronizar(); }
+});
+["click", "keydown", "touchstart"].forEach(ev => document.addEventListener(ev, () => { if (S.modo === "api") { const n = Date.now(); if (!S._ultMarca || n - S._ultMarca > 20000) { S._ultMarca = n; marcarActividad(); } } }, { passive: true }));
+setInterval(() => { if (S.modo === "api" && debeBloquear()) bloquear(); }, 30000);
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 // Si cambia el día con la app abierta, refrescar
 setInterval(() => { const m = mesDe(hoy()); if (S._dia !== hoy()) { S._dia = hoy(); if (S.mesSel < m && S.tab === "hoy") S.mesSel = m; render(); } }, 60000);

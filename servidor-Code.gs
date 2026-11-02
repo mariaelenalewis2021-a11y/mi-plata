@@ -1,5 +1,5 @@
 /**
- * Mi Plata · servidor (Google Apps Script) — rev 1.1
+ * Mi Plata · servidor (Google Apps Script) — rev 1.2
  * Cuenta: mariaelenalewis2021@gmail.com · Datos: planilla «Mi Plata · Datos» en su Drive.
  *
  * Seguridad:
@@ -10,7 +10,7 @@
  *  - Validación estricta de cada movimiento en el servidor; LockService en escrituras; sin fórmulas inyectables.
  *  - Permiso pedido: solo Hojas de cálculo (SpreadsheetApp).
  */
-const REV = '1.1';
+const REV = '1.2';
 const TZ = 'America/Argentina/Buenos_Aires';
 const P = PropertiesService.getScriptProperties();
 const COLS = ['ID', 'Fecha', 'Tipo', 'Monto', 'Categoría', 'Medio', 'Detalle', 'Descuento', 'Cuota', 'Grupo', 'Fijo', 'Creado'];
@@ -79,6 +79,8 @@ function doPost(e) {
       case 'borrarGrupo': return json_(conLock_(() => borrarGrupo_(q.g)));
       case 'cfg': return json_(conLock_(() => guardarCfg_(q.cfg)));
       case 'borrarTodo': return json_(conLock_(() => borrarTodo_(q.confirmar)));
+      case 'desbloquear': return json_(desbloquear_(q.pin));
+      case 'actividad': return json_(actividad_());
       case 'sesiones': return json_({ ok: true, sesiones: tokens_().map(t => ({ disp: t.disp, ult: t.ult, actual: t.h === ses.h })) });
       case 'logout': revocar_(ses.h, !!q.todas); return json_({ ok: true });
       default: throw err_('Acción desconocida.');
@@ -128,6 +130,41 @@ function login_(pin, disp) {
   P.setProperty('FALLOS', JSON.stringify({ n: 0, hasta: 0, bloq: 0 }));
   log_('login', limpiarDisp_(disp));
   return Object.assign({ ok: true }, nuevaSesion_(disp));
+}
+/** Verifica el PIN con la sesión ya abierta (pantalla de bloqueo). Comparte el contador de intentos y el bloqueo. */
+function verificarPin_(pin) {
+  const cfg = JSON.parse(P.getProperty('PIN') || 'null');
+  if (!cfg) throw err_('El servidor no tiene PIN.', 'SINPIN');
+  const F = JSON.parse(P.getProperty('FALLOS') || '{"n":0,"hasta":0,"bloq":0}');
+  if (Date.now() < F.hasta) throw err_('Demasiados intentos. Probá de nuevo en ' + Math.ceil((F.hasta - Date.now()) / 60000) + ' min.', 'BLOQ');
+  const ok = typeof pin === 'string' && pin.length <= 8 && hashPin_(pin, cfg.sal) === cfg.h;
+  if (!ok) {
+    F.n++;
+    if (F.n >= 5) { F.bloq++; F.n = 0; F.hasta = Date.now() + (F.bloq >= 3 ? 24 * 3600e3 : 15 * 60e3); log_('bloqueo', 'PIN incorrecto 5 veces (bloqueo ' + F.bloq + ')'); }
+    P.setProperty('FALLOS', JSON.stringify(F));
+    return false;
+  }
+  P.setProperty('FALLOS', JSON.stringify({ n: 0, hasta: 0, bloq: 0 }));
+  return true;
+}
+function desbloquear_(pin) {
+  if (!verificarPin_(pin)) {
+    const F = JSON.parse(P.getProperty('FALLOS') || '{}');
+    if (F.hasta > Date.now()) { revocarTodas_(); throw err_('PIN incorrecto 5 veces: por seguridad se cerraron todas las sesiones.', 'AUTH'); }
+    throw err_('PIN incorrecto.', 'PIN');
+  }
+  return { ok: true };
+}
+function revocarTodas_() { P.setProperty('TOKENS', '[]'); log_('logout', 'todas las sesiones (bloqueo por intentos)'); }
+/** Últimos accesos y eventos de seguridad (sin montos). */
+function actividad_() {
+  const sh = ss_().getSheetByName('Historial'); const n = sh.getLastRow() - 1;
+  if (n <= 0) return { ok: true, eventos: [] };
+  const desde = Math.max(2, sh.getLastRow() - 300);
+  const filas = sh.getRange(desde, 1, sh.getLastRow() - desde + 1, 3).getValues();
+  const ev = filas.filter(r => /^(login|bloqueo|pin_configurado|logout|reset_pin|borrar_todo)$/.test(String(r[1]))).slice(-15).reverse()
+    .map(r => ({ f: String(r[0]), a: String(r[1]), d: String(r[2]).slice(0, 80) }));
+  return { ok: true, eventos: ev };
 }
 const limpiarDisp_ = d => String(d || 'dispositivo').replace(/[^\w áéíóúñÁÉÍÓÚÑ().,\/-]/g, '').slice(0, 60);
 function tokens_() { const ahora = Date.now(); return JSON.parse(P.getProperty('TOKENS') || '[]').filter(t => t.exp > ahora); }
