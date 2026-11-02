@@ -120,6 +120,25 @@ input[type=range]{width:100%;accent-color:#ec4899}
 .badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;background:#fce7f3;color:#9d174d}
 .badge.g{background:#ccfbf1;color:#115e59}.badge.w{background:#fef3c7;color:#92400e}
 .scroll{overflow-x:auto}
+.fiesta{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.92),rgba(253,242,248,.85) 45%,rgba(124,58,237,.35));backdrop-filter:blur(2px);animation:fIn .25s ease;cursor:pointer;overflow:hidden}
+.fiesta .caja{text-align:center;position:relative;z-index:2}
+.fiesta svg{width:min(56vw,230px);height:auto;animation:salta .55s ease-in-out infinite alternate;filter:drop-shadow(0 12px 18px rgba(219,39,119,.35))}
+.fiesta .brazo-i{transform-origin:78px 118px;animation:saludo .3s ease-in-out infinite alternate}
+.fiesta .brazo-d{transform-origin:122px 118px;animation:saludo2 .3s ease-in-out infinite alternate}
+.fiesta .moneda{animation:gira .6s linear infinite;transform-origin:150px 66px}
+.fiesta h2{font-size:30px;margin:8px 0 2px;background:linear-gradient(90deg,#db2777,#f97316,#8b5cf6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.fiesta .monto{font-size:34px;font-weight:850;color:#0d9488;font-variant-numeric:tabular-nums;animation:late .5s ease-in-out infinite alternate}
+.fiesta .sub{color:#8a5a78;font-size:14px;margin-top:6px}
+.confe{position:absolute;top:-30px;z-index:1;font-size:22px;animation:cae linear forwards;will-change:transform}
+.confe.p{width:10px;height:14px;border-radius:2px;font-size:0}
+@keyframes fIn{from{opacity:0}to{opacity:1}}
+@keyframes salta{from{transform:translateY(8px) rotate(-4deg)}to{transform:translateY(-14px) rotate(4deg)}}
+@keyframes saludo{from{transform:rotate(18deg)}to{transform:rotate(-28deg)}}
+@keyframes saludo2{from{transform:rotate(-18deg)}to{transform:rotate(28deg)}}
+@keyframes gira{from{transform:scaleX(1)}50%{transform:scaleX(.15)}to{transform:scaleX(1)}}
+@keyframes late{from{transform:scale(1)}to{transform:scale(1.08)}}
+@keyframes cae{to{transform:translate(var(--dx),110vh) rotate(var(--r))}}
+@media (prefers-reduced-motion:reduce){.fiesta svg,.fiesta .brazo-i,.fiesta .brazo-d,.fiesta .moneda,.fiesta .monto{animation:none}.confe{display:none}}
 .scroll table td{white-space:nowrap}
 input::placeholder{letter-spacing:normal}
 .status{font-size:11.5px;display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.22);backdrop-filter:blur(6px);padding:4px 10px;border-radius:99px;margin-top:8px}
@@ -163,6 +182,22 @@ table.t td:last-child{text-align:right;white-space:nowrap}
   <button type="button" data-tab="movs"><span>🧾</span>Movimientos</button>
   <button type="button" data-tab="ajustes"><span>⚙️</span>Ajustes</button>
 </nav>
+<template id="tplFlorcita"><svg viewBox="0 0 200 220" aria-hidden="true">
+  <path d="M100 150 q-6 40 0 66" stroke="#10b981" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M100 196 q-30 -10 -42 -32 q26 0 42 22z" fill="#34d399"/><path d="M100 186 q30 -10 42 -32 q-26 0 -42 22z" fill="#10b981"/>
+  <g transform="translate(100 100)">
+    <ellipse rx="17" ry="34" cy="-40" fill="#f472b6"/><ellipse rx="17" ry="34" cy="-40" fill="#fb923c" transform="rotate(45)"/><ellipse rx="17" ry="34" cy="-40" fill="#f472b6" transform="rotate(90)"/>
+    <ellipse rx="17" ry="34" cy="-40" fill="#fb923c" transform="rotate(135)"/><ellipse rx="17" ry="34" cy="-40" fill="#f472b6" transform="rotate(180)"/><ellipse rx="17" ry="34" cy="-40" fill="#fb923c" transform="rotate(225)"/>
+    <ellipse rx="17" ry="34" cy="-40" fill="#f472b6" transform="rotate(270)"/><ellipse rx="17" ry="34" cy="-40" fill="#fb923c" transform="rotate(315)"/>
+    <circle r="34" fill="#fde047"/>
+    <path d="M-17 -8 q6 -9 12 0" stroke="#3b0a2a" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M5 -8 q6 -9 12 0" stroke="#3b0a2a" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <circle cx="-21" cy="7" r="6" fill="#fb7185" opacity=".6"/><circle cx="21" cy="7" r="6" fill="#fb7185" opacity=".6"/>
+    <path d="M-14 6 q14 20 28 0z" fill="#be123c"/><path d="M-8 13 q8 6 16 0" fill="#fda4af"/>
+  </g>
+  <g class="brazo-i"><path d="M78 118 q-22 -6 -34 -30" stroke="#9d174d" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="44" cy="86" r="7" fill="#f9a8d4"/></g>
+  <g class="brazo-d"><path d="M122 118 q22 -10 28 -40" stroke="#9d174d" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="150" cy="76" r="7" fill="#f9a8d4"/></g>
+  <g class="moneda"><circle cx="150" cy="66" r="15" fill="#facc15" stroke="#eab308" stroke-width="3"/><text x="150" y="72" text-anchor="middle" font-size="17" font-weight="900" fill="#a16207" font-family="Arial">$</text></g>
+</svg></template>
 <template id="tplFlor"><svg viewBox="0 0 120 120" width="96" height="96" aria-hidden="true"><path d="M60 118 q 14.0 -20.0 0 -40 q -14.0 20.0 0 40z" fill="#34d399" transform="rotate(-25 60 118)" opacity="1"/><path d="M60 118 q 14.0 -20.0 0 -40 q -14.0 20.0 0 40z" fill="#10b981" transform="rotate(25 60 118)" opacity="1"/><ellipse cx="60" cy="26.7" rx="14.7" ry="25.3" fill="#f472b6" transform="rotate(0.0 60 52)" opacity="1"/><ellipse cx="60" cy="26.7" rx="14.7" ry="25.3" fill="#fb923c" transform="rotate(45.0 60 52)" opacity="1"/><ellipse cx="60" cy="26.7" rx="14.7" ry="25.3" fill="#f472b6" transform="rotate(90.0 60 52)" opacity="1"/><ellipse cx="60" cy="26.7" rx="14.7" ry="25.3" fill="#fb923c" transform="rotate(135.0 60 52)" opacity="1"/><ellipse cx="60" cy="26.7" rx="14.7" ry="25.3" fill="#f472b6" transform="rotate(180.0 60 52)" opacity="1"/><ellipse cx="60" cy="26.7" rx="14.7" ry="25.3" fill="#fb923c" transform="rotate(225.0 60 52)" opacity="1"/><ellipse cx="60" cy="26.7" rx="14.7" ry="25.3" fill="#f472b6" transform="rotate(270.0 60 52)" opacity="1"/><ellipse cx="60" cy="26.7" rx="14.7" ry="25.3" fill="#fb923c" transform="rotate(315.0 60 52)" opacity="1"/><circle cx="60" cy="52" r="12.0" fill="#fde047" opacity="1"/></svg></template>
 <dialog id="dlg"><div class="in" id="dlgIn"></div></dialog>
 
@@ -176,7 +211,7 @@ if (window.top !== window.self) { document.documentElement.style.display = "none
    artifact de Claude; si no, en este dispositivo (localStorage).
    Sin innerHTML con datos: todo se pinta con textContent.
    ============================================================ */
-const VERSION = "1.6";
+const VERSION = "1.7";
 const LS_TOK = "miplata.tok", LS_CACHE = "miplata.cache", LS_COLA = "miplata.cola", LS_ACT = "miplata.act", LS_HUELLA = "miplata.huella";
 const LS_KEY = "miplata.v1";
 const LS_UI = "miplata.ui";
@@ -665,7 +700,9 @@ function estado(txt, ok) {
 }
 
 /* ---------- operaciones sobre movimientos ---------- */
-function agregarItems(lista) {
+function agregarItems(lista, opciones) {
+  const ing = lista.filter(x => x.t === "i").reduce((a, x) => a + x.m, 0);
+  if (ing > 0 && !(opciones && opciones.sinFestejo)) setTimeout(() => festejar(ing), 120);
   const tocados = new Set();
   lista.forEach(it => { const m = mesDe(it.f); (S.meses[m] = S.meses[m] || []).push(it); tocados.add(m); });
   tocados.forEach(m => S.meses[m].sort((a, b) => a.f.localeCompare(b.f) || a.ts - b.ts));
@@ -1319,7 +1356,7 @@ function vAjustes(app) {
       const items = Object.values(d.meses).flat().filter(validoItem);
       const ids = new Set(todos().map(x => x.id)); const nuevos = items.filter(x => !ids.has(x.id));
       if (d.cfg && typeof d.cfg === "object") { S.cfg = Object.assign(JSON.parse(JSON.stringify(CFG_DEF)), S.cfg, sanearCfg(d.cfg)); await Store.guardarCfg(); }
-      await agregarItems(nuevos); toast(`Importados ${nuevos.length} movimientos (${items.length - nuevos.length} ya estaban)`, 4000);
+      await agregarItems(nuevos, { sinFestejo: true }); toast(`Importados ${nuevos.length} movimientos (${items.length - nuevos.length} ya estaban)`, 4000);
     } catch (e) { toast("Ese archivo no es un respaldo válido de Mi Plata."); }
     file.value = "";
   });
@@ -1334,9 +1371,17 @@ function vAjustes(app) {
       h("button", { class: "btn sm", type: "button", text: "⬆️ Importar respaldo", onclick: () => file.click() }), file),
     localInfo ? h("button", { class: "btn sm", type: "button", style: "margin-top:8px", text: `Subir ${localInfo.n} movimientos guardados antes en este dispositivo`, onclick: async () => {
       const ids = new Set(todos().map(x => x.id)); const nuevos = Object.values(localInfo.d.meses).flat().filter(validoItem).filter(x => !ids.has(x.id));
-      await agregarItems(nuevos); toast(nuevos.length + " movimientos subidos");
+      await agregarItems(nuevos, { sinFestejo: true }); toast(nuevos.length + " movimientos subidos");
     } }) : null));
 
+  let ui = {}; try { ui = JSON.parse(localStorage.getItem(LS_UI) || "{}"); } catch (e) {}
+  const chkF = h("input", { type: "checkbox", checked: ui.festejo !== false, "aria-label": "Festejo al cargar ingresos" });
+  const chkS = h("input", { type: "checkbox", checked: ui.sonido !== false, "aria-label": "Sonido del festejo" });
+  chkF.addEventListener("change", () => guardarUI({ festejo: chkF.checked })); chkS.addEventListener("change", () => guardarUI({ sonido: chkS.checked }));
+  app.append(h("section", { class: "card" }, h("h2", { text: "🎉 Festejo cuando entra plata" }),
+    h("label", { class: "row", style: "justify-content:space-between;margin:6px 0" }, h("span", { text: "Mostrar a Florcita festejando" }), chkF),
+    h("label", { class: "row", style: "justify-content:space-between;margin:6px 0" }, h("span", { text: "Con sonido" }), chkS),
+    h("button", { class: "btn sm", type: "button", text: "Probar festejo", onclick: () => festejar(150000) })));
   const inBorrar = h("input", { class: "f", placeholder: "Escribí BORRAR", "aria-label": "Confirmación" });
   app.append(h("section", { class: "card" }, h("h2", { text: "Zona de cuidado" }),
     h("p", { class: "hint", text: "Borra todos los movimientos (la configuración queda). Exportá antes un respaldo." }),
@@ -1427,6 +1472,46 @@ function exportarCSV(m) {
   L.forEach(x => filas.push([x.f.split("-").reverse().join("/"), x.t === "i" ? "Ingreso" : "Egreso", x.c, x.p, x.n || "", x.t === "i" ? num(x.m) : "", x.t === "e" ? num(x.m) : "", num(x.t === "i" ? x.m : -x.m), x.d ? num(x.d) : "", x.q || "", x.fx ? "Sí" : ""]));
   const csv = "﻿" + "sep=;\n" + filas.map(r => r.map((v, i) => i >= 5 && i <= 8 ? v : esc(v)).join(";")).join("\r\n");
   descargar(`MiPlata_${m || "historial"}_${sello()}.csv`, csv, "text/csv;charset=utf-8");
+}
+
+/* ---------- festejo al entrar plata (personaje original «Florcita») ---------- */
+const FRASES = ["¡Entró plata!", "¡Vamos todavía!", "¡Bien ahí!", "¡A florecer!", "¡Caja feliz!", "¡Eso es!"];
+function sonidoFiesta() {
+  try {
+    const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+    const ac = new C(), t0 = ac.currentTime;
+    [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => {
+      const o = ac.createOscillator(), g = ac.createGain(); o.type = "triangle"; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t0 + i * 0.09); g.gain.exponentialRampToValueAtTime(0.18, t0 + i * 0.09 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + i * 0.09 + 0.35);
+      o.connect(g).connect(ac.destination); o.start(t0 + i * 0.09); o.stop(t0 + i * 0.09 + 0.4);
+    });
+    setTimeout(() => ac.close && ac.close(), 1500);
+  } catch (e) {}
+}
+function festejar(monto) {
+  if (document.querySelector(".fiesta")) document.querySelector(".fiesta").remove();
+  let u = {}; try { u = JSON.parse(localStorage.getItem(LS_UI) || "{}"); } catch (e) {}
+  if (u.festejo === false) { toast("💰 Entró " + money(monto)); return; }
+  const capa = h("div", { class: "fiesta", role: "dialog", "aria-label": "Festejo: entró " + money(monto) },
+    h("div", { class: "caja" }, document.getElementById("tplFlorcita").content.cloneNode(true),
+      h("h2", { text: FRASES[Math.floor(Math.random() * FRASES.length)] }),
+      h("div", { class: "monto", text: "+" + money(monto) }),
+      h("div", { class: "sub", text: "Tocá para seguir" })));
+  const piezas = ["💵", "💸", "🌸", "🌼", "✨", "💰", "🌷", "🪙"], col = ["#ec4899", "#f97316", "#8b5cf6", "#14b8a6", "#facc15", "#f43f5e"];
+  for (let i = 0; i < 46; i++) {
+    const emoji = i % 3 !== 0;
+    const c = h("span", { class: "confe" + (emoji ? "" : " p"), text: emoji ? piezas[i % piezas.length] : "" });
+    c.style.left = Math.random() * 100 + "vw"; c.style.setProperty("--dx", (Math.random() * 120 - 60) + "px"); c.style.setProperty("--r", (Math.random() * 720 - 360) + "deg");
+    c.style.animationDuration = (1.8 + Math.random() * 1.8) + "s"; c.style.animationDelay = (Math.random() * 0.6) + "s";
+    if (!emoji) c.style.background = col[i % col.length];
+    capa.append(c);
+  }
+  const fin = () => { capa.style.transition = "opacity .25s"; capa.style.opacity = "0"; setTimeout(() => capa.remove(), 260); };
+  capa.addEventListener("click", fin);
+  document.body.append(capa);
+  try { navigator.vibrate && navigator.vibrate([60, 40, 60, 40, 120]); } catch (e) {}
+  if (u.sonido !== false) sonidoFiesta();
+  setTimeout(fin, 3200);
 }
 
 /* ---------- instalar en el celular (PWA) ---------- */
