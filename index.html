@@ -176,7 +176,7 @@ if (window.top !== window.self) { document.documentElement.style.display = "none
    artifact de Claude; si no, en este dispositivo (localStorage).
    Sin innerHTML con datos: todo se pinta con textContent.
    ============================================================ */
-const VERSION = "1.5";
+const VERSION = "1.6";
 const LS_TOK = "miplata.tok", LS_CACHE = "miplata.cache", LS_COLA = "miplata.cola", LS_ACT = "miplata.act", LS_HUELLA = "miplata.huella";
 const LS_KEY = "miplata.v1";
 const LS_UI = "miplata.ui";
@@ -565,18 +565,20 @@ function debeBloquear() {
 function bloquear(forzar) {
   if (S.modo !== "api" && !forzar) return;
   if (Huella.activa()) { Api._mem = ""; Huella._k = null; S.meses = {}; } // con huella, bloquear = olvidar la sesión en memoria
-  S._huellaAuto = false; S.modo = "bloqueo"; cerrar(); estado(Huella.activa() ? "Bloqueada · usá tu huella" : "Bloqueada · ingresá tu PIN", false); render();
+  S._huellaAuto = false; S.modo = "bloqueo"; cerrar(); estado(Huella.activa() ? "Bloqueada · huella o patrón" : "Bloqueada · ingresá tu PIN", false); render();
 }
-async function entrarConHuella(btn) {
-  if (btn) { btn.disabled = true; btn.textContent = "Esperando tu huella…"; }
+async function entrarConHuella(btn, silencioso) {
+  const txt0 = btn ? btn.textContent : "";
+  if (btn) { btn.disabled = true; btn.textContent = "Esperando tu huella o patrón…"; }
   try {
     const tok = await Huella.desbloquear();
     Api._mem = tok; S.modo = "api"; marcarActividad();
     const c = await leerCache(); if (c && c.meses) { S.meses = c.meses; if (c.cfg) S.cfg = Object.assign(JSON.parse(JSON.stringify(CFG_DEF)), c.cfg); }
     render(); await Cola.vaciar(); await sincronizar();
   } catch (e) {
-    if (btn) { btn.disabled = false; btn.textContent = "👆 Entrar con huella"; }
-    toast(e && e.name === "NotAllowedError" ? "Huella cancelada. Probá de nuevo o usá tu PIN." : (e && e.message) || "No se pudo usar la huella.", 4000);
+    if (btn) { btn.disabled = false; btn.textContent = txt0; }
+    if (silencioso) return; // el intento automático al abrir no molesta si Android lo corta
+    toast(e && e.name === "NotAllowedError" ? "No se completó. Tocá de nuevo y usá tu huella o tu patrón." : (e && e.message) || "No se pudo usar la huella.", 4000);
   }
 }
 function vBloqueo(app) {
@@ -603,13 +605,25 @@ function vBloqueo(app) {
   };
   pin.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); ir(); } });
   btn.addEventListener("click", ir);
+  if (Huella.activa()) {
+    const cajaPin = h("div", { class: "hidden", style: "margin-top:10px" }, h("p", { class: "hint", text: "PIN de Mi Plata (última opción):" }), pin, btn);
+    const linkPin = h("button", { type: "button", class: "btn sm", style: "margin-top:16px;background:transparent;border:0;color:var(--mut);text-decoration:underline;min-height:32px", text: "¿No podés con huella ni patrón? Usar el PIN de Mi Plata",
+      onclick: () => { cajaPin.classList.remove("hidden"); linkPin.remove(); setTimeout(() => pin.focus(), 50); } });
+    app.append(h("section", { class: "card", style: "text-align:center;padding:26px 18px" },
+      document.getElementById("tplFlor").content.cloneNode(true),
+      h("h2", { style: "font-size:20px;margin:6px 0", text: "Mi Plata está bloqueada" }),
+      h("button", { class: "btn pri", type: "button", id: "btnHuella", style: "margin:10px 0 10px;font-size:18px;padding:16px", text: "👆 Entrar con huella", onclick: e => entrarConHuella(e.currentTarget) }),
+      h("button", { class: "btn", type: "button", style: "width:100%;font-size:16px;padding:14px", text: "🔓 Usar el patrón del celular", onclick: e => entrarConHuella(e.currentTarget) }),
+      h("p", { class: "hint", style: "margin-top:10px", text: "Se abre la ventana segura de tu celular: ahí podés poner el dedo o elegir «Usar patrón»." }),
+      linkPin, cajaPin));
+    if (!S._huellaAuto) { S._huellaAuto = true; setTimeout(() => { const b = $("#btnHuella"); if (b && S.modo === "bloqueo" && document.visibilityState === "visible") entrarConHuella(b, true); }, 400); }
+    return;
+  }
   app.append(h("section", { class: "card", style: "text-align:center;padding:26px 18px" },
     document.getElementById("tplFlor").content.cloneNode(true),
     h("h2", { style: "font-size:20px;margin:6px 0", text: "Mi Plata está bloqueada" }),
-    Huella.activa() ? h("button", { class: "btn pri", type: "button", id: "btnHuella", style: "margin:8px 0 14px;font-size:18px;padding:16px", text: "👆 Entrar con huella", onclick: e => entrarConHuella(e.currentTarget) }) : null,
-    h("p", { class: "hint", text: Huella.activa() ? "O ingresá tu PIN:" : "Por seguridad, la app pide tu PIN cuando la volvés a abrir. 5 intentos fallidos cierran todas las sesiones." }),
+    h("p", { class: "hint", text: "Por seguridad, la app pide tu PIN cuando la volvés a abrir. 5 intentos fallidos cierran todas las sesiones." }),
     pin, btn));
-  if (Huella.activa() && !S._huellaAuto) { S._huellaAuto = true; setTimeout(() => { const b = $("#btnHuella"); if (b && S.modo === "bloqueo") entrarConHuella(b); }, 350); }
   if (!Huella.activa()) setTimeout(() => pin.focus(), 50);
 }
 async function mostrarLogin(msg) {
@@ -829,7 +843,7 @@ function vHoy(app) {
   if (S.modo === "api" && !Huella.activa() && !S._huellaVisto) {
     const ph = h("div");
     Huella.soportada().then(ok => { if (!ok) return; ph.append(h("section", { class: "card mp", style: "display:flex;gap:12px;align-items:center" }, h("div", { style: "font-size:32px", text: "👆" }),
-      h("div", { style: "flex:1" }, h("b", { text: "Entrá con tu huella" }), h("div", { class: "hint", text: "Más rápido que el PIN y cifra tu sesión en el celu." })),
+      h("div", { style: "flex:1" }, h("b", { text: "Entrá con huella o patrón" }), h("div", { class: "hint", text: "Más rápido que el PIN y cifra tu sesión en el celu." })),
       h("button", { class: "btn pri", type: "button", style: "width:auto", text: "Activar", onclick: () => Huella.activar() }),
       h("button", { class: "icobtn", type: "button", "aria-label": "Ocultar", style: "background:transparent;color:var(--mut);width:28px", text: "✕", onclick: () => { S._huellaVisto = true; guardarUI({ huellaVisto: true }); ph.remove(); } }))); });
     app.append(ph);
@@ -1343,9 +1357,9 @@ function vAjustes(app) {
     }).catch(() => { act.textContent = ""; act.append(h("li", { class: "hint", text: "No se pudo leer la actividad." })); });
     Huella.soportada().then(ok => {
       const box = $("#boxHuella"); if (!box) return; box.textContent = "";
-      if (Huella.activa()) box.append(h("div", { class: "tip g" }, h("span", { text: "👆" }), h("div", { style: "flex:1" }, h("b", { text: "Huella activa en este equipo" }), h("div", { class: "hint", text: "Tu sesión queda cifrada: solo tu huella (o tu PIN) la abre." })),
+      if (Huella.activa()) box.append(h("div", { class: "tip g" }, h("span", { text: "👆" }), h("div", { style: "flex:1" }, h("b", { text: "Huella activa en este equipo" }), h("div", { class: "hint", text: "Tu sesión queda cifrada: la abre tu huella o el patrón del celular (el PIN, como último recurso)." })),
         h("button", { class: "btn sm", type: "button", text: "Desactivar", onclick: () => confirmar("¿Desactivar la huella en este equipo?", () => Huella.desactivar(), "Sí, desactivar") })));
-      else if (ok) box.append(h("div", { class: "tip" }, h("span", { text: "👆" }), h("div", { style: "flex:1" }, h("b", { text: "Entrar con huella digital" }), h("div", { class: "hint", text: "Más rápido que el PIN y más seguro: la huella no sale del teléfono y cifra tu sesión." })),
+      else if (ok) box.append(h("div", { class: "tip" }, h("span", { text: "👆" }), h("div", { style: "flex:1" }, h("b", { text: "Entrar con huella digital" }), h("div", { class: "hint", text: "Entrás con tu huella o el patrón del celular; no salen del teléfono y cifran tu sesión. El PIN queda de respaldo." })),
         h("button", { class: "btn sm", type: "button", text: "Activar", onclick: () => Huella.activar() })));
       else box.append(h("p", { class: "hint", text: "👆 La huella no está disponible en este navegador (abrí la app instalada o Chrome en el celular)." }));
     });
