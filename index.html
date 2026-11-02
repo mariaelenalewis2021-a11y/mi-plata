@@ -176,8 +176,8 @@ if (window.top !== window.self) { document.documentElement.style.display = "none
    artifact de Claude; si no, en este dispositivo (localStorage).
    Sin innerHTML con datos: todo se pinta con textContent.
    ============================================================ */
-const VERSION = "1.4";
-const LS_TOK = "miplata.tok", LS_CACHE = "miplata.cache", LS_COLA = "miplata.cola", LS_ACT = "miplata.act";
+const VERSION = "1.5";
+const LS_TOK = "miplata.tok", LS_CACHE = "miplata.cache", LS_COLA = "miplata.cola", LS_ACT = "miplata.act", LS_HUELLA = "miplata.huella";
 const LS_KEY = "miplata.v1";
 const LS_UI = "miplata.ui";
 
@@ -302,7 +302,7 @@ const S = {
   form: { t: "e", c: null, p: null },
   filtro: { q: "", c: "", t: "" }
 };
-try { const u = JSON.parse(localStorage.getItem(LS_UI) || "{}"); if (u.instalarVisto) S._instalarVisto = true; if (u.oculto) document.body.classList.add("oculto"); if (u.medio) S.form.p = u.medio; } catch (e) {}
+try { const u = JSON.parse(localStorage.getItem(LS_UI) || "{}"); if (u.instalarVisto) S._instalarVisto = true; if (u.huellaVisto) S._huellaVisto = true; if (u.oculto) document.body.classList.add("oculto"); if (u.medio) S.form.p = u.medio; } catch (e) {}
 function guardarUI(p) { try { const u = JSON.parse(localStorage.getItem(LS_UI) || "{}"); Object.assign(u, p); localStorage.setItem(LS_UI, JSON.stringify(u)); } catch (e) {} }
 
 const itemsMes = m => S.meses[m] || [];
@@ -382,8 +382,16 @@ const Store = {
    ============================================================ */
 const Api = {
   url: () => String(window.MP_API || "").trim(),
-  tok() { try { return localStorage.getItem(LS_TOK) || ""; } catch (e) { return ""; } },
-  setTok(t) { try { t ? localStorage.setItem(LS_TOK, t) : localStorage.removeItem(LS_TOK); } catch (e) {} },
+  _mem: "",
+  tok() { if (this._mem) return this._mem; try { return localStorage.getItem(LS_TOK) || ""; } catch (e) { return ""; } },
+  /** Con huella activa la sesión solo vive en memoria; en el equipo queda cifrada con la llave que libera la huella. */
+  setTok(t) {
+    this._mem = t || "";
+    try {
+      if (!t) { localStorage.removeItem(LS_TOK); return; }
+      if (Huella.activa()) localStorage.removeItem(LS_TOK); else localStorage.setItem(LS_TOK, t);
+    } catch (e) {}
+  },
   async llamar(q, conToken = true) {
     const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 35000);
     try {
@@ -433,7 +441,26 @@ const Cola = {
     } finally { this.corriendo = false; }
   }
 };
-function guardarCache() { try { localStorage.setItem(LS_CACHE, JSON.stringify({ meses: S.meses, cfg: S.cfg, ts: Date.now() })); } catch (e) {} }
+/** Copia local para abrir rápido y sin señal. Con huella activa se guarda cifrada (AES-GCM) con la llave de la huella. */
+function guardarCache() {
+  const plano = JSON.stringify({ meses: S.meses, cfg: S.cfg, ts: Date.now() });
+  try {
+    if (!Huella.activa()) { localStorage.setItem(LS_CACHE, plano); return; }
+    if (!Huella._k) return; // sin llave en memoria no se escribe nada legible
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    crypto.subtle.encrypt({ name: "AES-GCM", iv }, Huella._k, new TextEncoder().encode(plano))
+      .then(ct => { try { localStorage.setItem(LS_CACHE, JSON.stringify({ enc: 1, iv: b64u.enc(iv), ct: b64u.enc(ct) })); } catch (e) {} }).catch(() => {});
+  } catch (e) {}
+}
+async function leerCache() {
+  try {
+    const c = JSON.parse(localStorage.getItem(LS_CACHE) || "null"); if (!c) return null;
+    if (!c.enc) return c;
+    if (!Huella._k) return null;
+    const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64u.dec(c.iv) }, Huella._k, b64u.dec(c.ct));
+    return JSON.parse(new TextDecoder().decode(pt));
+  } catch (e) { return null; }
+}
 async function sincronizar() {
   if (Cola.lista.length) return Cola.vaciar();
   try {
@@ -451,13 +478,82 @@ async function sincronizar() {
 }
 async function iniciarApi() {
   S.modo = "api";
-  try { const c = JSON.parse(localStorage.getItem(LS_CACHE) || "null"); if (c) { S.meses = c.meses || {}; if (c.cfg) S.cfg = Object.assign(JSON.parse(JSON.stringify(CFG_DEF)), c.cfg); } } catch (e) {}
+  try { const c = JSON.parse(localStorage.getItem(LS_CACHE) || "null"); if (c && !c.enc) { S.meses = c.meses || {}; if (c.cfg) S.cfg = Object.assign(JSON.parse(JSON.stringify(CFG_DEF)), c.cfg); } } catch (e) {}
   Cola.cargar();
+  if (Huella.activa() && !Api._mem) { S.modo = "api"; bloquear(true); return; }
   if (!Api.tok()) return mostrarLogin();
   if (debeBloquear()) { bloquear(); Cola.vaciar(); return; }
   marcarActividad(); render();
   await Cola.vaciar(); await sincronizar();
 }
+/* ---------- huella digital (passkey WebAuthn + PRF) ----------
+   La huella se verifica en el propio teléfono (nunca sale de él). Con la extensión PRF
+   el autenticador entrega una llave secreta solo tras verificar la huella; con esa llave
+   (AES-GCM 256 vía HKDF) se cifra la sesión guardada en el equipo. Sin huella o PIN, la
+   app no tiene sesión utilizable. */
+const b64u = {
+  enc: buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""),
+  dec: s => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((s.length + 3) % 4)), c => c.charCodeAt(0))
+};
+const Huella = {
+  datos() { try { return JSON.parse(localStorage.getItem(LS_HUELLA) || "null"); } catch (e) { return null; } },
+  activa() { const d = this.datos(); return !!(d && d.cred && d.ct); },
+  async soportada() {
+    try { return !!(window.PublicKeyCredential && window.isSecureContext && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()); } catch (e) { return false; }
+  },
+  async llave(prf) {
+    const base = await crypto.subtle.importKey("raw", prf, "HKDF", false, ["deriveKey"]);
+    return crypto.subtle.deriveKey({ name: "HKDF", hash: "SHA-256", salt: new TextEncoder().encode("MiPlata-huella-v1"), info: new TextEncoder().encode("sesion") }, base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+  },
+  async pedirPrf(credId, sal) {
+    const a = await navigator.credentials.get({ publicKey: {
+      challenge: crypto.getRandomValues(new Uint8Array(32)), rpId: location.hostname, timeout: 60000, userVerification: "required",
+      allowCredentials: [{ type: "public-key", id: b64u.dec(credId) }], extensions: { prf: { eval: { first: b64u.dec(sal) } } } } });
+    const r = a.getClientExtensionResults(); const out = r && r.prf && r.prf.results && r.prf.results.first;
+    if (!out) throw Object.assign(new Error("Este teléfono no entrega la llave segura de la huella (PRF)."), { code: "NOPRF" });
+    return out;
+  },
+  async cifrar(token, credId, sal) {
+    const k = await this.llave(await this.pedirPrf(credId, sal));
+    this._k = k;
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, k, new TextEncoder().encode(token));
+    localStorage.setItem(LS_HUELLA, JSON.stringify({ cred: credId, sal, iv: b64u.enc(iv), ct: b64u.enc(ct), desde: new Date().toISOString() }));
+    localStorage.removeItem(LS_TOK);
+  },
+  async activar() {
+    const tok = Api.tok(); if (!tok) { toast("Primero ingresá con tu PIN."); return; }
+    if (!(await this.soportada())) { toast("Este teléfono o navegador no tiene huella disponible para la web."); return; }
+    const sal = b64u.enc(crypto.getRandomValues(new Uint8Array(32)));
+    let cred;
+    try {
+      cred = await navigator.credentials.create({ publicKey: {
+        rp: { name: "Mi Plata", id: location.hostname },
+        user: { id: crypto.getRandomValues(new Uint8Array(16)), name: "Mi Plata", displayName: "Mi Plata" },
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
+        authenticatorSelection: { authenticatorAttachment: "platform", residentKey: "preferred", userVerification: "required" },
+        timeout: 60000, attestation: "none", extensions: { prf: {} } } });
+    } catch (e) { toast(e && e.name === "NotAllowedError" ? "Cancelaste la huella." : "No se pudo registrar la huella."); return; }
+    const ext = cred.getClientExtensionResults();
+    if (ext && ext.prf && ext.prf.enabled === false) { toast("Tu teléfono registró la huella pero no permite usarla para cifrar. Seguís con PIN.", 5000); return; }
+    try {
+      toast("Ahora confirmá con tu huella una vez más para guardar la llave 👆", 4000);
+      await this.cifrar(tok, b64u.enc(cred.rawId), sal);
+      Api._mem = tok; marcarActividad(); guardarCache(); render(); toast("¡Listo! Desde ahora entrás con tu huella 👆🌸", 4000);
+    } catch (e) { localStorage.removeItem(LS_HUELLA); toast(e.code === "NOPRF" ? e.message + " Seguís con PIN." : "No se pudo activar la huella.", 5000); }
+  },
+  async desbloquear() {
+    const d = this.datos(); if (!d) return null;
+    const k = await this.llave(await this.pedirPrf(d.cred, d.sal));
+    this._k = k;
+    const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64u.dec(d.iv) }, k, b64u.dec(d.ct));
+    return new TextDecoder().decode(pt);
+  },
+  _k: null,
+  desactivar() { const t = Api.tok(); localStorage.removeItem(LS_HUELLA); this._k = null; if (t) Api.setTok(t); guardarCache(); render(); toast("Huella desactivada en este equipo. Seguís con PIN."); }
+};
+
 /* ---------- bloqueo con PIN al volver a la app ---------- */
 function minutosBloqueo() { try { const u = JSON.parse(localStorage.getItem(LS_UI) || "{}"); return u.bloqueo == null ? 5 : +u.bloqueo; } catch (e) { return 5; } }
 function marcarActividad() { try { localStorage.setItem(LS_ACT, String(Date.now())); } catch (e) {} }
@@ -466,7 +562,23 @@ function debeBloquear() {
   let t = 0; try { t = +localStorage.getItem(LS_ACT) || 0; } catch (e) {}
   return Date.now() - t > min * 60000;
 }
-function bloquear() { if (S.modo !== "api") return; S.modo = "bloqueo"; cerrar(); estado("Bloqueada · ingresá tu PIN", false); render(); }
+function bloquear(forzar) {
+  if (S.modo !== "api" && !forzar) return;
+  if (Huella.activa()) { Api._mem = ""; Huella._k = null; S.meses = {}; } // con huella, bloquear = olvidar la sesión en memoria
+  S._huellaAuto = false; S.modo = "bloqueo"; cerrar(); estado(Huella.activa() ? "Bloqueada · usá tu huella" : "Bloqueada · ingresá tu PIN", false); render();
+}
+async function entrarConHuella(btn) {
+  if (btn) { btn.disabled = true; btn.textContent = "Esperando tu huella…"; }
+  try {
+    const tok = await Huella.desbloquear();
+    Api._mem = tok; S.modo = "api"; marcarActividad();
+    const c = await leerCache(); if (c && c.meses) { S.meses = c.meses; if (c.cfg) S.cfg = Object.assign(JSON.parse(JSON.stringify(CFG_DEF)), c.cfg); }
+    render(); await Cola.vaciar(); await sincronizar();
+  } catch (e) {
+    if (btn) { btn.disabled = false; btn.textContent = "👆 Entrar con huella"; }
+    toast(e && e.name === "NotAllowedError" ? "Huella cancelada. Probá de nuevo o usá tu PIN." : (e && e.message) || "No se pudo usar la huella.", 4000);
+  }
+}
 function vBloqueo(app) {
   const pin = h("input", { class: "f", type: "password", inputmode: "numeric", autocomplete: "current-password", maxlength: "8", placeholder: "PIN", "aria-label": "PIN", style: "font-size:24px;letter-spacing:.3em;text-align:center" });
   const btn = h("button", { class: "btn pri", type: "button", style: "margin-top:12px", text: "Desbloquear" });
@@ -474,6 +586,13 @@ function vBloqueo(app) {
     if (!/^\d{6,8}$/.test(pin.value.trim())) { toast("El PIN tiene de 6 a 8 números."); return; }
     btn.disabled = true; btn.textContent = "Verificando…";
     try {
+      if (Huella.activa() && !Api._mem) {
+        const r = await Api.llamar({ accion: "login", pin: pin.value.trim(), disp: dispositivo() }, false);
+        Api._mem = r.token; S.modo = "api"; marcarActividad();
+        render();
+        const d = Huella.datos(); Huella.cifrar(r.token, d.cred, d.sal).catch(() => {}); // vuelve a guardar la sesión nueva protegida por la huella
+        await Cola.vaciar(); await sincronizar(); return;
+      }
       await Api.llamar({ accion: "desbloquear", pin: pin.value.trim() });
       S.modo = "api"; marcarActividad(); render(); await Cola.vaciar(); await sincronizar();
     } catch (e) {
@@ -487,9 +606,11 @@ function vBloqueo(app) {
   app.append(h("section", { class: "card", style: "text-align:center;padding:26px 18px" },
     document.getElementById("tplFlor").content.cloneNode(true),
     h("h2", { style: "font-size:20px;margin:6px 0", text: "Mi Plata está bloqueada" }),
-    h("p", { class: "hint", text: "Por seguridad, la app pide tu PIN cuando la volvés a abrir. 5 intentos fallidos cierran todas las sesiones." }),
+    Huella.activa() ? h("button", { class: "btn pri", type: "button", id: "btnHuella", style: "margin:8px 0 14px;font-size:18px;padding:16px", text: "👆 Entrar con huella", onclick: e => entrarConHuella(e.currentTarget) }) : null,
+    h("p", { class: "hint", text: Huella.activa() ? "O ingresá tu PIN:" : "Por seguridad, la app pide tu PIN cuando la volvés a abrir. 5 intentos fallidos cierran todas las sesiones." }),
     pin, btn));
-  setTimeout(() => pin.focus(), 50);
+  if (Huella.activa() && !S._huellaAuto) { S._huellaAuto = true; setTimeout(() => { const b = $("#btnHuella"); if (b && S.modo === "bloqueo") entrarConHuella(b); }, 350); }
+  if (!Huella.activa()) setTimeout(() => pin.focus(), 50);
 }
 async function mostrarLogin(msg) {
   S.modo = "login"; S.loginMsg = msg || ""; S.alta = false;
@@ -508,7 +629,8 @@ function vLogin(app) {
     btn.disabled = true; btn.textContent = "Verificando…";
     try {
       const r = await Api.llamar({ accion: S.alta ? "configurarPin" : "login", pin: v, disp: dispositivo() }, false);
-      Api.setTok(r.token); S.modo = "api"; marcarActividad(); toast(S.alta ? "PIN creado. ¡Listo!" : "Hola de nuevo 👋");
+      Api.setTok(r.token); S.modo = "api"; marcarActividad();
+      if (Huella.activa()) { const d = Huella.datos(); Huella.cifrar(r.token, d.cred, d.sal).then(() => guardarCache()).catch(() => {}); } toast(S.alta ? "PIN creado. ¡Listo!" : "Hola de nuevo 👋");
       render(); await Cola.vaciar(); await sincronizar();
     } catch (e) { btn.disabled = false; btn.textContent = S.alta ? "Crear mi PIN y entrar" : "Entrar"; pin.value = ""; pin2.value = ""; toast(e.code === "RED" ? "Sin conexión con el servidor." : e.message, 4000); pin.focus(); }
   };
@@ -704,6 +826,14 @@ function vHoy(app) {
   const t = hoy();
   if (Instalar.mostrar() && !S._instalarVisto) { const ti = tarjetaInstalar(); if (ti) { ti.append(h("button", { class: "icobtn", type: "button", "aria-label": "Ocultar", style: "background:transparent;color:var(--mut);width:28px", text: "✕", onclick: () => { S._instalarVisto = true; guardarUI({ instalarVisto: true }); render(); } })); app.append(ti); } }
   app.append(tarjetaResumen(mesDe(t)));
+  if (S.modo === "api" && !Huella.activa() && !S._huellaVisto) {
+    const ph = h("div");
+    Huella.soportada().then(ok => { if (!ok) return; ph.append(h("section", { class: "card mp", style: "display:flex;gap:12px;align-items:center" }, h("div", { style: "font-size:32px", text: "👆" }),
+      h("div", { style: "flex:1" }, h("b", { text: "Entrá con tu huella" }), h("div", { class: "hint", text: "Más rápido que el PIN y cifra tu sesión en el celu." })),
+      h("button", { class: "btn pri", type: "button", style: "width:auto", text: "Activar", onclick: () => Huella.activar() }),
+      h("button", { class: "icobtn", type: "button", "aria-label": "Ocultar", style: "background:transparent;color:var(--mut);width:28px", text: "✕", onclick: () => { S._huellaVisto = true; guardarUI({ huellaVisto: true }); ph.remove(); } }))); });
+    app.append(ph);
+  }
   // --- formulario de alta ---
   const F = S.form;
   if (!F.p || !S.cfg.medios.includes(F.p)) F.p = S.cfg.medios[0];
@@ -1211,9 +1341,18 @@ function vAjustes(app) {
       if (!r.eventos.length) act.append(h("li", { class: "hint", text: "Sin eventos todavía." }));
       r.eventos.forEach(e => act.append(h("li", { class: "mv", style: "cursor:default" }, h("div", { class: "tx" }, h("div", { class: "t1", text: nom[e.a] || e.a }), h("div", { class: "t2", text: e.f + (e.d ? " · " + e.d : "") })))));
     }).catch(() => { act.textContent = ""; act.append(h("li", { class: "hint", text: "No se pudo leer la actividad." })); });
+    Huella.soportada().then(ok => {
+      const box = $("#boxHuella"); if (!box) return; box.textContent = "";
+      if (Huella.activa()) box.append(h("div", { class: "tip g" }, h("span", { text: "👆" }), h("div", { style: "flex:1" }, h("b", { text: "Huella activa en este equipo" }), h("div", { class: "hint", text: "Tu sesión queda cifrada: solo tu huella (o tu PIN) la abre." })),
+        h("button", { class: "btn sm", type: "button", text: "Desactivar", onclick: () => confirmar("¿Desactivar la huella en este equipo?", () => Huella.desactivar(), "Sí, desactivar") })));
+      else if (ok) box.append(h("div", { class: "tip" }, h("span", { text: "👆" }), h("div", { style: "flex:1" }, h("b", { text: "Entrar con huella digital" }), h("div", { class: "hint", text: "Más rápido que el PIN y más seguro: la huella no sale del teléfono y cifra tu sesión." })),
+        h("button", { class: "btn sm", type: "button", text: "Activar", onclick: () => Huella.activar() })));
+      else box.append(h("p", { class: "hint", text: "👆 La huella no está disponible en este navegador (abrí la app instalada o Chrome en el celular)." }));
+    });
     app.append(h("section", { class: "card" }, h("h2", { text: "🛡️ Seguridad" }),
       h("div", { class: "grid2", style: "align-items:center" }, h("b", { text: "Pedir PIN al volver después de" }), selB),
-      h("button", { class: "btn sm", type: "button", style: "margin-top:8px", text: "🔒 Bloquear ahora", onclick: bloquear }),
+      h("div", { id: "boxHuella", style: "margin-top:10px" }),
+      h("button", { class: "btn sm", type: "button", style: "margin-top:8px", text: "🔒 Bloquear ahora", onclick: () => bloquear() }),
       h("div", { class: "lbl", text: "Últimos accesos (revisá que todos sean tuyos)" }), act,
       h("p", { class: "hint", style: "margin-top:8px", text: "Tu PIN nunca se guarda en el teléfono ni viaja en claro a ningún lado distinto de tu servidor; en el servidor solo queda una huella cifrada. Si ves un acceso que no reconocés: «Cerrar en todos los equipos»." })));
   }
@@ -1227,6 +1366,7 @@ function vAjustes(app) {
 async function salir(todas) {
   if (Cola.lista.length) { toast("Esperá: hay cambios sin subir. Probá de nuevo con conexión."); return; }
   try { await Api.llamar({ accion: "logout", todas }); } catch (e) {}
+  try { localStorage.removeItem(LS_HUELLA); } catch (e) {}
   Api.setTok(""); try { localStorage.removeItem(LS_CACHE); } catch (e) {}
   S.meses = {}; S.cfg = JSON.parse(JSON.stringify(CFG_DEF)); mostrarLogin(todas ? "Cerraste la sesión en todos los equipos." : "Sesión cerrada.");
 }

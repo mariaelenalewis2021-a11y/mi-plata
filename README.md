@@ -30,3 +30,8 @@ En el editor de Apps Script: ejecutar `resetearPin()` y después `prepararMiPlat
 - Registro de accesos visible en Ajustes → Seguridad (ingresos, bloqueos, cierres), sin montos.
 - Anti‑clickjacking (no se deja mostrar dentro de marcos ajenos), CSP estricta, sin referer, sin terceros.
 - La sincronización de fondo nunca pisa cambios sin subir ni lo que estás escribiendo.
+
+## Huella digital (1.5)
+- Passkey WebAuthn de plataforma (la huella se verifica en el teléfono y nunca sale de él) con extensión PRF: el autenticador entrega una llave solo tras verificar la huella; con ella (HKDF → AES‑GCM 256) se cifran la sesión y la copia local de los datos.
+- Con huella activa, «bloquear» borra la sesión y los datos de la memoria; sin huella o PIN la app no tiene sesión utilizable.
+- El PIN sigue como respaldo; si el teléfono no soporta PRF, la huella no se activa (no hay modo inseguro).
