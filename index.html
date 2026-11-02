@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#db2777">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mi Plata">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.argentinadatos.com; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="referrer" content="no-referrer">
+<script src="config.js"></script>
+<meta name="robots" content="noindex">
+<title>Mi Plata · Ingresos y egresos</title>
+<style>
+:root{
+  --bg:#fff6fa;--card:#fff;--tx:#3b0a2a;--mut:#8a5a78;--line:#f8dbe9;
+  --ing:#0d9488;--ing-s:#ccfbf1;--egr:#e11d48;--egr-s:#ffe4e6;
+  --pri:#ec4899;--pri2:#f97316;--lila:#8b5cf6;--warn:#d97706;--warn-s:#fef3c7;
+  --r:18px;--sh:0 1px 2px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.06);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#1a0b1c;--card:#26122a;--tx:#fbe7f3;--mut:#d6a6c4;--line:#43213f;
+  --ing-s:#06392b;--egr-s:#46101f;--warn-s:#3d2a05;--sh:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22180%22%20height%3D%22180%22%20viewBox%3D%220%200%20180%20180%22%3E%3Cellipse%20cx%3D%2230%22%20cy%3D%2222.3%22%20rx%3D%224.5%22%20ry%3D%227.7%22%20fill%3D%22%23f9a8d4%22%20transform%3D%22rotate%280.0%2030%2030%29%22%20opacity%3D%220.55%22/%3E%3Cellipse%20cx%3D%2230%22%20cy%3D%2222.3%22%20rx%3D%224.5%22%20ry%3D%227.7%22%20fill%3D%22%23fbcfe8%22%20transform%3D%22rotate%2872.0%2030%2030%29%22%20opacity%3D%220.55%22/%3E%3Cellipse%20cx%3D%2230%22%20cy%3D%2222.3%22%20rx%3D%224.5%22%20ry%3D%227.7%22%20fill%3D%22%23f9a8d4%22%20transform%3D%22rotate%28144.0%2030%2030%29%22%20opacity%3D%220.55%22/%3E%3Cellipse%20cx%3D%2230%22%20cy%3D%2222.3%22%20rx%3D%224.5%22%20ry%3D%227.7%22%20fill%3D%22%23fbcfe8%22%20transform%3D%22rotate%28216.0%2030%2030%29%22%20opacity%3D%220.55%22/%3E%3Cellipse%20cx%3D%2230%22%20cy%3D%2222.3%22%20rx%3D%224.5%22%20ry%3D%227.7%22%20fill%3D%22%23f9a8d4%22%20transform%3D%22rotate%28288.0%2030%2030%29%22%20opacity%3D%220.55%22/%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%223.6%22%20fill%3D%22%23fde68a%22%20opacity%3D%220.55%22/%3E%3Cellipse%20cx%3D%22120%22%20cy%3D%2264.5%22%20rx%3D%223.2%22%20ry%3D%225.5%22%20fill%3D%22%23fdba74%22%20transform%3D%22rotate%2820.0%20120%2070%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%22120%22%20cy%3D%2264.5%22%20rx%3D%223.2%22%20ry%3D%225.5%22%20fill%3D%22%23fed7aa%22%20transform%3D%22rotate%2880.0%20120%2070%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%22120%22%20cy%3D%2264.5%22%20rx%3D%223.2%22%20ry%3D%225.5%22%20fill%3D%22%23fdba74%22%20transform%3D%22rotate%28140.0%20120%2070%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%22120%22%20cy%3D%2264.5%22%20rx%3D%223.2%22%20ry%3D%225.5%22%20fill%3D%22%23fed7aa%22%20transform%3D%22rotate%28200.0%20120%2070%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%22120%22%20cy%3D%2264.5%22%20rx%3D%223.2%22%20ry%3D%225.5%22%20fill%3D%22%23fdba74%22%20transform%3D%22rotate%28260.0%20120%2070%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%22120%22%20cy%3D%2264.5%22%20rx%3D%223.2%22%20ry%3D%225.5%22%20fill%3D%22%23fed7aa%22%20transform%3D%22rotate%28320.0%20120%2070%29%22%20opacity%3D%220.5%22/%3E%3Ccircle%20cx%3D%22120%22%20cy%3D%2270%22%20r%3D%222.6%22%20fill%3D%22%23fef3c7%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%2260%22%20cy%3D%22123.4%22%20rx%3D%223.8%22%20ry%3D%226.6%22%20fill%3D%22%23c4b5fd%22%20transform%3D%22rotate%2810.0%2060%20130%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%2260%22%20cy%3D%22123.4%22%20rx%3D%223.8%22%20ry%3D%226.6%22%20fill%3D%22%23ddd6fe%22%20transform%3D%22rotate%2882.0%2060%20130%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%2260%22%20cy%3D%22123.4%22%20rx%3D%223.8%22%20ry%3D%226.6%22%20fill%3D%22%23c4b5fd%22%20transform%3D%22rotate%28154.0%2060%20130%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%2260%22%20cy%3D%22123.4%22%20rx%3D%223.8%22%20ry%3D%226.6%22%20fill%3D%22%23ddd6fe%22%20transform%3D%22rotate%28226.0%2060%20130%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%2260%22%20cy%3D%22123.4%22%20rx%3D%223.8%22%20ry%3D%226.6%22%20fill%3D%22%23c4b5fd%22%20transform%3D%22rotate%28298.0%2060%20130%29%22%20opacity%3D%220.5%22/%3E%3Ccircle%20cx%3D%2260%22%20cy%3D%22130%22%20r%3D%223.1%22%20fill%3D%22%23fde68a%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%22155%22%20cy%3D%22145.6%22%20rx%3D%222.6%22%20ry%3D%224.4%22%20fill%3D%22%2399f6e4%22%20transform%3D%22rotate%280.0%20155%20150%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%22155%22%20cy%3D%22145.6%22%20rx%3D%222.6%22%20ry%3D%224.4%22%20fill%3D%22%23ccfbf1%22%20transform%3D%22rotate%2872.0%20155%20150%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%22155%22%20cy%3D%22145.6%22%20rx%3D%222.6%22%20ry%3D%224.4%22%20fill%3D%22%2399f6e4%22%20transform%3D%22rotate%28144.0%20155%20150%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%22155%22%20cy%3D%22145.6%22%20rx%3D%222.6%22%20ry%3D%224.4%22%20fill%3D%22%23ccfbf1%22%20transform%3D%22rotate%28216.0%20155%20150%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%22155%22%20cy%3D%22145.6%22%20rx%3D%222.6%22%20ry%3D%224.4%22%20fill%3D%22%2399f6e4%22%20transform%3D%22rotate%28288.0%20155%20150%29%22%20opacity%3D%220.5%22/%3E%3Ccircle%20cx%3D%22155%22%20cy%3D%22150%22%20r%3D%222.1%22%20fill%3D%22%23fde68a%22%20opacity%3D%220.5%22/%3E%3Cpath%20d%3D%22M95%2030%20q%205.6%20-8.0%200%20-16%20q%20-5.6%208.0%200%2016z%22%20fill%3D%22%23a7f3d0%22%20transform%3D%22rotate%2840%2095%2030%29%22%20opacity%3D%220.6%22/%3E%3Cpath%20d%3D%22M20%2095%20q%204.8999999999999995%20-7.0%200%20-14%20q%20-4.8999999999999995%207.0%200%2014z%22%20fill%3D%22%23a7f3d0%22%20transform%3D%22rotate%28-30%2020%2095%29%22%20opacity%3D%220.6%22/%3E%3C/svg%3E");background-size:180px}
+@media (prefers-color-scheme:dark){body{background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22180%22%20height%3D%22180%22%20viewBox%3D%220%200%20180%20180%22%3E%3Cellipse%20cx%3D%2230%22%20cy%3D%2222.3%22%20rx%3D%224.5%22%20ry%3D%227.7%22%20fill%3D%22%23f9a8d4%22%20transform%3D%22rotate%280.0%2030%2030%29%22%20opacity%3D%220.55%22/%3E%3Cellipse%20cx%3D%2230%22%20cy%3D%2222.3%22%20rx%3D%224.5%22%20ry%3D%227.7%22%20fill%3D%22%23fbcfe8%22%20transform%3D%22rotate%2872.0%2030%2030%29%22%20opacity%3D%220.55%22/%3E%3Cellipse%20cx%3D%2230%22%20cy%3D%2222.3%22%20rx%3D%224.5%22%20ry%3D%227.7%22%20fill%3D%22%23f9a8d4%22%20transform%3D%22rotate%28144.0%2030%2030%29%22%20opacity%3D%220.55%22/%3E%3Cellipse%20cx%3D%2230%22%20cy%3D%2222.3%22%20rx%3D%224.5%22%20ry%3D%227.7%22%20fill%3D%22%23fbcfe8%22%20transform%3D%22rotate%28216.0%2030%2030%29%22%20opacity%3D%220.55%22/%3E%3Cellipse%20cx%3D%2230%22%20cy%3D%2222.3%22%20rx%3D%224.5%22%20ry%3D%227.7%22%20fill%3D%22%23f9a8d4%22%20transform%3D%22rotate%28288.0%2030%2030%29%22%20opacity%3D%220.55%22/%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%223.6%22%20fill%3D%22%23fde68a%22%20opacity%3D%220.55%22/%3E%3Cellipse%20cx%3D%22120%22%20cy%3D%2264.5%22%20rx%3D%223.2%22%20ry%3D%225.5%22%20fill%3D%22%23fdba74%22%20transform%3D%22rotate%2820.0%20120%2070%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%22120%22%20cy%3D%2264.5%22%20rx%3D%223.2%22%20ry%3D%225.5%22%20fill%3D%22%23fed7aa%22%20transform%3D%22rotate%2880.0%20120%2070%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%22120%22%20cy%3D%2264.5%22%20rx%3D%223.2%22%20ry%3D%225.5%22%20fill%3D%22%23fdba74%22%20transform%3D%22rotate%28140.0%20120%2070%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%22120%22%20cy%3D%2264.5%22%20rx%3D%223.2%22%20ry%3D%225.5%22%20fill%3D%22%23fed7aa%22%20transform%3D%22rotate%28200.0%20120%2070%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%22120%22%20cy%3D%2264.5%22%20rx%3D%223.2%22%20ry%3D%225.5%22%20fill%3D%22%23fdba74%22%20transform%3D%22rotate%28260.0%20120%2070%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%22120%22%20cy%3D%2264.5%22%20rx%3D%223.2%22%20ry%3D%225.5%22%20fill%3D%22%23fed7aa%22%20transform%3D%22rotate%28320.0%20120%2070%29%22%20opacity%3D%220.5%22/%3E%3Ccircle%20cx%3D%22120%22%20cy%3D%2270%22%20r%3D%222.6%22%20fill%3D%22%23fef3c7%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%2260%22%20cy%3D%22123.4%22%20rx%3D%223.8%22%20ry%3D%226.6%22%20fill%3D%22%23c4b5fd%22%20transform%3D%22rotate%2810.0%2060%20130%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%2260%22%20cy%3D%22123.4%22%20rx%3D%223.8%22%20ry%3D%226.6%22%20fill%3D%22%23ddd6fe%22%20transform%3D%22rotate%2882.0%2060%20130%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%2260%22%20cy%3D%22123.4%22%20rx%3D%223.8%22%20ry%3D%226.6%22%20fill%3D%22%23c4b5fd%22%20transform%3D%22rotate%28154.0%2060%20130%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%2260%22%20cy%3D%22123.4%22%20rx%3D%223.8%22%20ry%3D%226.6%22%20fill%3D%22%23ddd6fe%22%20transform%3D%22rotate%28226.0%2060%20130%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%2260%22%20cy%3D%22123.4%22%20rx%3D%223.8%22%20ry%3D%226.6%22%20fill%3D%22%23c4b5fd%22%20transform%3D%22rotate%28298.0%2060%20130%29%22%20opacity%3D%220.5%22/%3E%3Ccircle%20cx%3D%2260%22%20cy%3D%22130%22%20r%3D%223.1%22%20fill%3D%22%23fde68a%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%22155%22%20cy%3D%22145.6%22%20rx%3D%222.6%22%20ry%3D%224.4%22%20fill%3D%22%2399f6e4%22%20transform%3D%22rotate%280.0%20155%20150%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%22155%22%20cy%3D%22145.6%22%20rx%3D%222.6%22%20ry%3D%224.4%22%20fill%3D%22%23ccfbf1%22%20transform%3D%22rotate%2872.0%20155%20150%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%22155%22%20cy%3D%22145.6%22%20rx%3D%222.6%22%20ry%3D%224.4%22%20fill%3D%22%2399f6e4%22%20transform%3D%22rotate%28144.0%20155%20150%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%22155%22%20cy%3D%22145.6%22%20rx%3D%222.6%22%20ry%3D%224.4%22%20fill%3D%22%23ccfbf1%22%20transform%3D%22rotate%28216.0%20155%20150%29%22%20opacity%3D%220.5%22/%3E%3Cellipse%20cx%3D%22155%22%20cy%3D%22145.6%22%20rx%3D%222.6%22%20ry%3D%224.4%22%20fill%3D%22%2399f6e4%22%20transform%3D%22rotate%28288.0%20155%20150%29%22%20opacity%3D%220.5%22/%3E%3Ccircle%20cx%3D%22155%22%20cy%3D%22150%22%20r%3D%222.1%22%20fill%3D%22%23fde68a%22%20opacity%3D%220.5%22/%3E%3Cpath%20d%3D%22M95%2030%20q%205.6%20-8.0%200%20-16%20q%20-5.6%208.0%200%2016z%22%20fill%3D%22%23a7f3d0%22%20transform%3D%22rotate%2840%2095%2030%29%22%20opacity%3D%220.6%22/%3E%3Cpath%20d%3D%22M20%2095%20q%204.8999999999999995%20-7.0%200%20-14%20q%20-4.8999999999999995%207.0%200%2014z%22%20fill%3D%22%23a7f3d0%22%20transform%3D%22rotate%28-30%2020%2095%29%22%20opacity%3D%220.6%22/%3E%3C/svg%3E")}}
+body{font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--tx);-webkit-font-smoothing:antialiased;padding-bottom:84px}
+button,input,select,textarea{font:inherit;color:inherit}
+header{background:linear-gradient(120deg,#7c3aed 0%,#db2777 45%,#f97316 80%,#facc15 110%);color:#fff;padding:18px 16px 58px;position:relative;overflow:hidden}
+header .flores{position:absolute;right:-10px;bottom:-6px;width:min(300px,62vw);height:auto;opacity:.95;pointer-events:none;filter:drop-shadow(0 6px 14px rgba(0,0,0,.18))}
+header .top,header .wrap{position:relative;z-index:1}
+header h1{text-shadow:0 2px 10px rgba(0,0,0,.2)}
+header .top{display:flex;align-items:center;gap:10px;max-width:760px;margin:0 auto}
+header h1{font-size:18px;margin:0;font-weight:750;letter-spacing:-.01em;flex:1}
+header .sub{opacity:.75;font-size:12px}
+.icobtn{background:rgba(255,255,255,.14);border:0;color:#fff;border-radius:12px;width:40px;height:40px;cursor:pointer;font-size:18px}
+.icobtn:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #a5b4fc;outline-offset:2px}
+main{max-width:760px;margin:-40px auto 0;padding:0 12px;position:relative}
+.card{background:var(--card) url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2264%22%20height%3D%2264%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cellipse%20cx%3D%2246%22%20cy%3D%228.1%22%20rx%3D%225.8%22%20ry%3D%229.9%22%20fill%3D%22%23fbcfe8%22%20transform%3D%22rotate%280.0%2046%2018%29%22%20opacity%3D%220.7%22/%3E%3Cellipse%20cx%3D%2246%22%20cy%3D%228.1%22%20rx%3D%225.8%22%20ry%3D%229.9%22%20fill%3D%22%23fde68a%22%20transform%3D%22rotate%2860.0%2046%2018%29%22%20opacity%3D%220.7%22/%3E%3Cellipse%20cx%3D%2246%22%20cy%3D%228.1%22%20rx%3D%225.8%22%20ry%3D%229.9%22%20fill%3D%22%23fbcfe8%22%20transform%3D%22rotate%28120.0%2046%2018%29%22%20opacity%3D%220.7%22/%3E%3Cellipse%20cx%3D%2246%22%20cy%3D%228.1%22%20rx%3D%225.8%22%20ry%3D%229.9%22%20fill%3D%22%23fde68a%22%20transform%3D%22rotate%28180.0%2046%2018%29%22%20opacity%3D%220.7%22/%3E%3Cellipse%20cx%3D%2246%22%20cy%3D%228.1%22%20rx%3D%225.8%22%20ry%3D%229.9%22%20fill%3D%22%23fbcfe8%22%20transform%3D%22rotate%28240.0%2046%2018%29%22%20opacity%3D%220.7%22/%3E%3Cellipse%20cx%3D%2246%22%20cy%3D%228.1%22%20rx%3D%225.8%22%20ry%3D%229.9%22%20fill%3D%22%23fde68a%22%20transform%3D%22rotate%28300.0%2046%2018%29%22%20opacity%3D%220.7%22/%3E%3Ccircle%20cx%3D%2246%22%20cy%3D%2218%22%20r%3D%224.7%22%20fill%3D%22%23fdba74%22%20opacity%3D%220.7%22/%3E%3C/svg%3E") no-repeat right -6px top -6px;border-radius:22px;box-shadow:0 1px 2px rgba(131,24,67,.06),0 10px 28px rgba(236,72,153,.10);padding:16px;margin-bottom:12px;border:1px solid var(--line)}
+.card h2{font-size:15px;margin:0 0 10px;font-weight:700}
+.card h2 small{font-weight:500;color:var(--mut);font-size:12px;margin-left:6px}
+.hero{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hero .big{grid-column:1/-1}
+.kpi .l{font-size:12px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.kpi .v{font-size:22px;font-weight:780;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.kpi.big .v{font-size:32px}
+.kpi .s{font-size:12px;color:var(--mut)}
+.pos{color:var(--ing)}.neg{color:var(--egr)}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--bg);border-radius:14px;padding:4px;gap:4px;margin-bottom:10px}
+.seg button{border:0;border-radius:11px;padding:10px;background:transparent;font-weight:700;cursor:pointer;color:var(--mut)}
+.seg button.on.e{background:var(--egr);color:#fff}
+.seg button.on.i{background:var(--ing);color:#fff}
+.amount{display:flex;align-items:center;gap:6px;border-bottom:2px solid var(--line);margin-bottom:12px}
+.amount span{font-size:26px;color:var(--mut);font-weight:700}
+.amount input{border:0;background:transparent;font-size:34px;font-weight:800;width:100%;padding:6px 0;outline:none;font-variant-numeric:tabular-nums}
+.lbl{font-size:12px;color:var(--mut);font-weight:650;margin:10px 0 6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 12px;cursor:pointer;font-size:13.5px;white-space:nowrap}
+.chip.on{background:linear-gradient(135deg,var(--pri),var(--pri2));border-color:transparent;color:#fff;box-shadow:0 4px 12px rgba(236,72,153,.3)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+input.f,select.f,textarea.f{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:10px 12px;min-height:44px}
+.btn{border:0;border-radius:14px;padding:12px 16px;font-weight:700;cursor:pointer;background:var(--bg);border:1px solid var(--line);min-height:44px}
+.btn.pri{background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;border:0;width:100%;font-size:16px}
+.btn.sm{padding:8px 12px;min-height:36px;font-size:13px;border-radius:11px}
+.btn.dan{color:var(--egr)}
+.quick{display:flex;gap:8px}
+.quick input{flex:1}
+.hint{font-size:12px;color:var(--mut)}
+.list{list-style:none;margin:0;padding:0}
+.mv{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.mv:last-child{border-bottom:0}
+.mv .ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:18px;flex:none}
+.mv .ic.e{background:var(--egr-s)}.mv .ic.i{background:var(--ing-s)}
+.mv .tx{flex:1;min-width:0}
+.mv .t1{font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mv .t2{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mv .am{font-weight:750;font-variant-numeric:tabular-nums;white-space:nowrap}
+.day{font-size:12px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin:14px 4px 2px;display:flex;justify-content:space-between}
+.bar{height:10px;background:var(--bg);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--lila),var(--pri),var(--pri2))}
+.bar i.w{background:var(--warn)}.bar i.x{background:var(--egr)}
+.cat{margin:10px 0}
+.cat .h{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:5px;gap:8px}
+.cat .h b{font-weight:650}
+.cat .h span{color:var(--mut);font-variant-numeric:tabular-nums;white-space:nowrap}
+.donutw{display:flex;gap:16px;align-items:center}
+.donut{width:120px;height:120px;border-radius:50%;flex:none;position:relative}
+.donut::after{content:"";position:absolute;inset:22px;background:var(--card);border-radius:50%}
+.legend{font-size:13px;display:grid;gap:4px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+.days{display:flex;align-items:flex-end;gap:2px;height:110px;padding-top:6px}
+.days div{flex:1;background:linear-gradient(180deg,#f97316,#ec4899 60%,#8b5cf6);border-radius:4px 4px 0 0;min-height:2px;opacity:.85}
+.days div.today{outline:2px solid var(--pri)}
+.days div.fut{background:var(--line)}
+.tip{display:flex;gap:10px;padding:10px 12px;border-radius:14px;background:var(--bg);margin:8px 0;font-size:14px}
+.tip.w{background:var(--warn-s)}.tip.b{background:var(--egr-s)}.tip.g{background:var(--ing-s)}
+.monthbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.monthbar b{font-size:17px;text-transform:capitalize}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 6px calc(6px + env(safe-area-inset-bottom));z-index:20}
+nav.tabs button{border:0;background:transparent;padding:6px 2px;border-radius:12px;cursor:pointer;color:var(--mut);font-size:11.5px;font-weight:650;display:grid;gap:2px;justify-items:center}
+nav.tabs button span{font-size:20px}
+nav.tabs button.on{color:#be185d;background:linear-gradient(135deg,#fce7f3,#ffedd5)}
+@media (prefers-color-scheme:dark){nav.tabs button.on{color:#fbcfe8;background:#43213f}}
+.proy{display:flex;align-items:flex-end;gap:4px;height:150px;padding-top:6px}
+.proy div{flex:1;border-radius:8px 8px 3px 3px;position:relative;min-height:3px;background:linear-gradient(180deg,#facc15,#f97316 30%,#ec4899 70%,#8b5cf6)}
+.proy div.neg{background:linear-gradient(180deg,#fda4af,#e11d48)}
+.proy div span{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--mut);white-space:nowrap}
+.proyx{display:flex;gap:4px;font-size:10.5px;color:var(--mut);margin-top:4px}
+.proyx span{flex:1;text-align:center;text-transform:capitalize}
+input[type=range]{width:100%;accent-color:#ec4899}
+.mp{background:linear-gradient(135deg,#ecfeff,#fdf2f8 60%,#fff7ed);border:1px solid #fbcfe8}
+@media (prefers-color-scheme:dark){.mp{background:linear-gradient(135deg,#0e2a33,#2a1030 60%,#2e1a0c);border-color:#5b2350}}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;background:#fce7f3;color:#9d174d}
+.badge.g{background:#ccfbf1;color:#115e59}.badge.w{background:#fef3c7;color:#92400e}
+.scroll{overflow-x:auto}
+.scroll table td{white-space:nowrap}
+input::placeholder{letter-spacing:normal}
+.status{font-size:11.5px;display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.22);backdrop-filter:blur(6px);padding:4px 10px;border-radius:99px;margin-top:8px}
+.status i{width:8px;height:8px;border-radius:50%;background:#fbbf24}
+.status.ok i{background:#34d399}
+.wrap{max-width:760px;margin:0 auto}
+dialog{border:0;border-radius:22px;padding:0;width:min(520px,94vw);background:var(--card);color:var(--tx);box-shadow:0 30px 80px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(15,23,42,.55)}
+dialog .in{padding:18px}
+dialog h3{margin:0 0 12px}
+.toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:50;box-shadow:var(--sh);max-width:90vw}
+.empty{text-align:center;color:var(--mut);padding:18px 6px}
+.hidden{display:none!important}
+body.oculto .am,body.oculto .v,body.oculto .money{filter:blur(8px)}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t td{padding:7px 4px;border-bottom:1px solid var(--line)}
+table.t td:last-child{text-align:right;white-space:nowrap}
+@media (min-width:800px){nav.tabs{max-width:760px;margin:0 auto;border:1px solid var(--line);border-bottom:0;border-radius:18px 18px 0 0}}
+@media (max-width:420px){.kpi .v{font-size:19px}.kpi.big .v{font-size:28px}}
+@media (prefers-reduced-motion:no-preference){.card{animation:up .25s ease both}@keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}}
+</style>
+</head>
+<body>
+<header>
+  <svg class="flores" viewBox="0 0 260 150" aria-hidden="true" focusable="false"><path d="M150 140 q 21.0 -30.0 0 -60 q -21.0 30.0 0 60z" fill="#34d399" transform="rotate(-35 150 140)" opacity="1"/><path d="M205 150 q 19.25 -27.5 0 -55 q -19.25 27.5 0 55z" fill="#10b981" transform="rotate(25 205 150)" opacity="1"/><path d="M95 150 q 14.0 -20.0 0 -40 q -14.0 20.0 0 40z" fill="#6ee7b7" transform="rotate(-60 95 150)" opacity="1"/><ellipse cx="200" cy="35.6" rx="15.4" ry="26.4" fill="#fb7185" transform="rotate(10.0 200 62)" opacity="1"/><ellipse cx="200" cy="35.6" rx="15.4" ry="26.4" fill="#f472b6" transform="rotate(55.0 200 62)" opacity="1"/><ellipse cx="200" cy="35.6" rx="15.4" ry="26.4" fill="#fb7185" transform="rotate(100.0 200 62)" opacity="1"/><ellipse cx="200" cy="35.6" rx="15.4" ry="26.4" fill="#f472b6" transform="rotate(145.0 200 62)" opacity="1"/><ellipse cx="200" cy="35.6" rx="15.4" ry="26.4" fill="#fb7185" transform="rotate(190.0 200 62)" opacity="1"/><ellipse cx="200" cy="35.6" rx="15.4" ry="26.4" fill="#f472b6" transform="rotate(235.0 200 62)" opacity="1"/><ellipse cx="200" cy="35.6" rx="15.4" ry="26.4" fill="#fb7185" transform="rotate(280.0 200 62)" opacity="1"/><ellipse cx="200" cy="35.6" rx="15.4" ry="26.4" fill="#f472b6" transform="rotate(325.0 200 62)" opacity="1"/><circle cx="200" cy="62" r="12.5" fill="#fde047" opacity="1"/><ellipse cx="128" cy="74.4" rx="10.2" ry="17.6" fill="#fbbf24" transform="rotate(0.0 128 92)" opacity="1"/><ellipse cx="128" cy="74.4" rx="10.2" ry="17.6" fill="#fb923c" transform="rotate(60.0 128 92)" opacity="1"/><ellipse cx="128" cy="74.4" rx="10.2" ry="17.6" fill="#fbbf24" transform="rotate(120.0 128 92)" opacity="1"/><ellipse cx="128" cy="74.4" rx="10.2" ry="17.6" fill="#fb923c" transform="rotate(180.0 128 92)" opacity="1"/><ellipse cx="128" cy="74.4" rx="10.2" ry="17.6" fill="#fbbf24" transform="rotate(240.0 128 92)" opacity="1"/><ellipse cx="128" cy="74.4" rx="10.2" ry="17.6" fill="#fb923c" transform="rotate(300.0 128 92)" opacity="1"/><circle cx="128" cy="92" r="8.3" fill="#fff7ed" opacity="1"/><ellipse cx="240" cy="103.7" rx="8.3" ry="14.3" fill="#a78bfa" transform="rotate(15.0 240 118)" opacity="1"/><ellipse cx="240" cy="103.7" rx="8.3" ry="14.3" fill="#c4b5fd" transform="rotate(66.4 240 118)" opacity="1"/><ellipse cx="240" cy="103.7" rx="8.3" ry="14.3" fill="#a78bfa" transform="rotate(117.9 240 118)" opacity="1"/><ellipse cx="240" cy="103.7" rx="8.3" ry="14.3" fill="#c4b5fd" transform="rotate(169.3 240 118)" opacity="1"/><ellipse cx="240" cy="103.7" rx="8.3" ry="14.3" fill="#a78bfa" transform="rotate(220.7 240 118)" opacity="1"/><ellipse cx="240" cy="103.7" rx="8.3" ry="14.3" fill="#c4b5fd" transform="rotate(272.1 240 118)" opacity="1"/><ellipse cx="240" cy="103.7" rx="8.3" ry="14.3" fill="#a78bfa" transform="rotate(323.6 240 118)" opacity="1"/><circle cx="240" cy="118" r="6.8" fill="#fde047" opacity="1"/><ellipse cx="70" cy="30.1" rx="5.8" ry="9.9" fill="#22d3ee" transform="rotate(30.0 70 40)" opacity="1"/><ellipse cx="70" cy="30.1" rx="5.8" ry="9.9" fill="#67e8f9" transform="rotate(102.0 70 40)" opacity="1"/><ellipse cx="70" cy="30.1" rx="5.8" ry="9.9" fill="#22d3ee" transform="rotate(174.0 70 40)" opacity="1"/><ellipse cx="70" cy="30.1" rx="5.8" ry="9.9" fill="#67e8f9" transform="rotate(246.0 70 40)" opacity="1"/><ellipse cx="70" cy="30.1" rx="5.8" ry="9.9" fill="#22d3ee" transform="rotate(318.0 70 40)" opacity="1"/><circle cx="70" cy="40" r="4.7" fill="#fef9c3" opacity="1"/><ellipse cx="160" cy="15.4" rx="3.8" ry="6.6" fill="#fde047" transform="rotate(0.0 160 22)" opacity="1"/><ellipse cx="160" cy="15.4" rx="3.8" ry="6.6" fill="#facc15" transform="rotate(72.0 160 22)" opacity="1"/><ellipse cx="160" cy="15.4" rx="3.8" ry="6.6" fill="#fde047" transform="rotate(144.0 160 22)" opacity="1"/><ellipse cx="160" cy="15.4" rx="3.8" ry="6.6" fill="#facc15" transform="rotate(216.0 160 22)" opacity="1"/><ellipse cx="160" cy="15.4" rx="3.8" ry="6.6" fill="#fde047" transform="rotate(288.0 160 22)" opacity="1"/><circle cx="160" cy="22" r="3.1" fill="#f97316" opacity="1"/></svg>
+  <div class="top">
+    <div style="flex:1">
+      <h1>🌸 Mi Plata</h1>
+      <div class="sub" id="hdrSub">Ingresos y egresos diarios</div>
+    </div>
+    <button class="icobtn" id="btnOjo" type="button" aria-label="Ocultar o mostrar montos" title="Ocultar montos">👁️</button>
+  </div>
+  <div class="wrap"><span class="status" id="estado"><i></i><span>Conectando…</span></span></div>
+</header>
+<main id="app" aria-live="polite"></main>
+<nav class="tabs" aria-label="Secciones">
+  <button type="button" data-tab="hoy" class="on"><span>➕</span>Hoy</button>
+  <button type="button" data-tab="mes"><span>📊</span>Mes</button>
+  <button type="button" data-tab="proy"><span>🌷</span>Proyectado</button>
+  <button type="button" data-tab="movs"><span>🧾</span>Movimientos</button>
+  <button type="button" data-tab="ajustes"><span>⚙️</span>Ajustes</button>
+</nav>
+<template id="tplFlor"><svg viewBox="0 0 120 120" width="96" height="96" aria-hidden="true"><path d="M60 118 q 14.0 -20.0 0 -40 q -14.0 20.0 0 40z" fill="#34d399" transform="rotate(-25 60 118)" opacity="1"/><path d="M60 118 q 14.0 -20.0 0 -40 q -14.0 20.0 0 40z" fill="#10b981" transform="rotate(25 60 118)" opacity="1"/><ellipse cx="60" cy="26.7" rx="14.7" ry="25.3" fill="#f472b6" transform="rotate(0.0 60 52)" opacity="1"/><ellipse cx="60" cy="26.7" rx="14.7" ry="25.3" fill="#fb923c" transform="rotate(45.0 60 52)" opacity="1"/><ellipse cx="60" cy="26.7" rx="14.7" ry="25.3" fill="#f472b6" transform="rotate(90.0 60 52)" opacity="1"/><ellipse cx="60" cy="26.7" rx="14.7" ry="25.3" fill="#fb923c" transform="rotate(135.0 60 52)" opacity="1"/><ellipse cx="60" cy="26.7" rx="14.7" ry="25.3" fill="#f472b6" transform="rotate(180.0 60 52)" opacity="1"/><ellipse cx="60" cy="26.7" rx="14.7" ry="25.3" fill="#fb923c" transform="rotate(225.0 60 52)" opacity="1"/><ellipse cx="60" cy="26.7" rx="14.7" ry="25.3" fill="#f472b6" transform="rotate(270.0 60 52)" opacity="1"/><ellipse cx="60" cy="26.7" rx="14.7" ry="25.3" fill="#fb923c" transform="rotate(315.0 60 52)" opacity="1"/><circle cx="60" cy="52" r="12.0" fill="#fde047" opacity="1"/></svg></template>
+<dialog id="dlg"><div class="in" id="dlgIn"></div></dialog>
+
+<script>
+"use strict";
+/* ============================================================
+   Mi Plata — app personal de ingresos y egresos
+   Datos: nube privada (solo el dueño) cuando se abre como
+   artifact de Claude; si no, en este dispositivo (localStorage).
+   Sin innerHTML con datos: todo se pinta con textContent.
+   ============================================================ */
+const VERSION = "1.2";
+const LS_TOK = "miplata.tok", LS_CACHE = "miplata.cache", LS_COLA = "miplata.cola";
+const LS_KEY = "miplata.v1";
+const LS_UI = "miplata.ui";
+
+/* ---------- utilidades ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+function h(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  if (attrs) for (const k in attrs) {
+    const v = attrs[k];
+    if (v == null || v === false) continue;
+    if (k === "class") e.className = v;
+    else if (k === "text") e.textContent = v;
+    else if (k === "style") e.setAttribute("style", v);
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else if (v === true) e.setAttribute(k, "");
+    else e.setAttribute(k, v);
+  }
+  for (const k of kids.flat(9)) if (k != null && k !== false) e.append(k.nodeType ? k : String(k));
+  return e;
+}
+const pad = n => String(n).padStart(2, "0");
+const isoDia = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+const hoy = () => isoDia(new Date());
+const mesDe = f => f.slice(0, 7);
+const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const DIAS = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+const nombreMes = m => MESES[+m.slice(5, 7) - 1] + " " + m.slice(0, 4);
+const diasDelMes = m => new Date(+m.slice(0, 4), +m.slice(5, 7), 0).getDate();
+function sumMes(m, k) { let y = +m.slice(0, 4), mm = +m.slice(5, 7) + k; while (mm > 12) { mm -= 12; y++; } while (mm < 1) { mm += 12; y--; } return y + "-" + pad(mm); }
+function fechaEnMes(f, k) { const m = sumMes(mesDe(f), k); const d = Math.min(+f.slice(8, 10), diasDelMes(m)); return m + "-" + pad(d); }
+function diaTexto(f) {
+  const t = hoy(); const d = new Date(f + "T12:00:00");
+  const ay = new Date(); ay.setDate(ay.getDate() - 1);
+  if (f === t) return "Hoy";
+  if (f === isoDia(ay)) return "Ayer";
+  return DIAS[d.getDay()] + " " + (+f.slice(8, 10)) + "/" + (+f.slice(5, 7));
+}
+const fmtN = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2, minimumFractionDigits: 0 });
+const money = n => (n < 0 ? "−$ " : "$ ") + fmtN.format(Math.abs(Math.round(n * 100) / 100));
+function moneyK(n) {
+  const a = Math.abs(n), s = n < 0 ? "−" : "";
+  if (a >= 1e6) return s + "$ " + fmtN.format(Math.round(a / 1e4) / 100) + " M";
+  if (a >= 1e4) return s + "$ " + fmtN.format(Math.round(a / 100) / 10) + " mil";
+  return money(n);
+}
+/** Interpreta montos argentinos: "3.500", "3500,50", "1.234.567,8", "3500.5", "$ 12 mil", "1,5M" */
+function parseMonto(s) {
+  if (s == null) return NaN;
+  let t = String(s).toLowerCase().replace(/\$|ars|\s/g, "");
+  let mult = 1;
+  const m1 = t.match(/^(.*?)(mil|k|m|millones|millon|millón)$/);
+  if (m1) { t = m1[1]; mult = /^(mil|k)$/.test(m1[2]) ? 1e3 : 1e6; }
+  if (!t) return NaN;
+  if (t.includes(",")) t = t.replace(/\./g, "").replace(",", ".");
+  else if (/^\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, "");
+  const n = Number(t);
+  return isFinite(n) ? Math.round(n * mult * 100) / 100 : NaN;
+}
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+function toast(msg, ms = 2600) {
+  document.querySelectorAll(".toast").forEach(x => x.remove());
+  const t = h("div", { class: "toast", role: "status", text: msg });
+  document.body.append(t); setTimeout(() => t.remove(), ms);
+}
+
+/* ---------- configuración por defecto ---------- */
+const CFG_DEF = {
+  catE: [
+    ["Supermercado","🛒"],["Comida y delivery","🍔"],["Auto y nafta","🚗"],["Transporte","🚌"],
+    ["Servicios","💡"],["Hogar y alquiler","🏠"],["Mascotas","🐶"],["Salud","💊"],
+    ["Salidas","🎉"],["Ropa","👕"],["Educación","📚"],["Suscripciones","📺"],
+    ["Impuestos","🧾"],["Regalos","🎁"],["Tarjeta (pago)","💳"],["Otros","📦"]
+  ],
+  catI: [["Sueldo","💼"],["Extra / comisiones","⭐"],["Ventas","🏷️"],["Reintegros","↩️"],["Intereses","📈"],["Otros ingresos","💰"]],
+  medios: ["Mercado Pago","Débito Galicia","Crédito","Transferencia","Efectivo"],
+  presu: {},           // categoría -> tope mensual
+  fijos: [],           // {id, t, n, m, c, p, dia}
+  objAhorro: 20,       // % objetivo de ahorro
+  saldoMP: 0,          // plata hoy en Mercado Pago (para el proyectado)
+  tnaManual: 0,        // 0 = usar la TNA real de Mercado Fondo
+  horiz: 12, recorte: 0, pctMP: 100
+};
+/* Palabras para la carga rápida ("3500 nafta mp") */
+const KW = [
+  [/coto|super|carrefour|dia\b|jumbo|chino|almacen|verduler|carnic|vea\b|disco\b/, "Supermercado"],
+  [/delivery|rappi|pedidosya|pedidos ya|comida|almuerzo|cena|cafe|pizza|burger|mcdonald|resto/, "Comida y delivery"],
+  [/nafta|ypf|shell|axion|combustible|peaje|estacionamiento|cochera|seguro auto|patente|mecanico|service|lavadero|honda/, "Auto y nafta"],
+  [/sube|colectivo|subte|tren|uber|cabify|didi|taxi|remis/, "Transporte"],
+  [/luz|edenor|edesur|gas|metrogas|agua|aysa|internet|fibertel|telecentro|personal|movistar|claro|celular|expensas/, "Servicios"],
+  [/alquiler|hogar|ferreteria|limpieza|mueble|easy|sodimac|tele\b|televisor|heladera|lavarropas|electro|aire acondicionado|colchon/, "Hogar y alquiler"],
+  [/perro|gato|veterin|vete\b|balanceado|brisa|cloe|rodolfo|tortuga|mascota|petshop/, "Mascotas"],
+  [/farmacia|medic|prepaga|osde|swiss|galeno|consulta|dentista|remedio/, "Salud"],
+  [/salida|bar\b|cine|boliche|entrada|recital|teatro|birra|cerveza/, "Salidas"],
+  [/ropa|zapatill|remera|pantalon|campera/, "Ropa"],
+  [/curso|facultad|libro|educacion|colegio/, "Educación"],
+  [/netflix|spotify|disney|youtube|hbo|max\b|prime|icloud|google one|chatgpt|claude|suscrip/, "Suscripciones"],
+  [/afip|arca|arba|agip|monotributo|impuesto|abl/, "Impuestos"],
+  [/regalo|cumple/, "Regalos"],
+  [/pago tarjeta|resumen|visa|master|amex/, "Tarjeta (pago)"],
+  [/sueldo|salario|aguinaldo|haberes/, "Sueldo"],
+  [/comision|extra|bono|changa|freelance/, "Extra / comisiones"],
+  [/venta|vendi/, "Ventas"],
+  [/reintegro|devolucion|cashback/, "Reintegros"],
+  [/interes|plazo fijo|fci|rendimiento/, "Intereses"]
+];
+const KWM = [
+  [/\bmp\b|mercado ?pago|mpago/, "Mercado Pago"],
+  [/debito|\bdeb\b|galicia/, "Débito Galicia"],
+  [/credito|\bcred\b|visa|master|tarjeta|cuotas?\b/, "Crédito"],
+  [/transf|transferencia|cbu|alias/, "Transferencia"],
+  [/efectivo|\bef\b|cash|billete/, "Efectivo"]
+];
+
+/* ---------- estado ---------- */
+const S = {
+  meses: {},            // "AAAA-MM" -> [items]
+  cfg: JSON.parse(JSON.stringify(CFG_DEF)),
+  modo: "cargando",     // "nube" | "local" | "cargando"
+  tab: "hoy",
+  mesSel: mesDe(hoy()),
+  form: { t: "e", c: null, p: null },
+  filtro: { q: "", c: "", t: "" }
+};
+try { const u = JSON.parse(localStorage.getItem(LS_UI) || "{}"); if (u.oculto) document.body.classList.add("oculto"); if (u.medio) S.form.p = u.medio; } catch (e) {}
+function guardarUI(p) { try { const u = JSON.parse(localStorage.getItem(LS_UI) || "{}"); Object.assign(u, p); localStorage.setItem(LS_UI, JSON.stringify(u)); } catch (e) {} }
+
+const itemsMes = m => S.meses[m] || [];
+const todos = () => Object.values(S.meses).flat();
+const catsDe = t => (t === "i" ? S.cfg.catI : S.cfg.catE);
+const iconoCat = c => { const x = [...S.cfg.catE, ...S.cfg.catI].find(a => a[0] === c); return x ? x[1] : "•"; };
+
+/* ============================================================
+   ALMACENAMIENTO
+   Nube: colección "meses" (1 doc por mes: {items:[...]}) +
+         doc "config/ajustes". Reglas: solo el dueño lee y escribe.
+   Local: localStorage con la misma forma.
+   ============================================================ */
+const Store = {
+  db: null, colas: {},
+  /** Cambio ya aplicado en pantalla → guardarlo donde corresponda. */
+  op(q, meses) {
+    if (S.modo === "api") { guardarCache(); return Cola.poner(q); }
+    if (q.accion === "cfg") return this.guardarCfg();
+    return Promise.all((meses || []).map(m => this.guardarMes(m)));
+  },
+  async iniciar() {
+    if (Api.url()) return iniciarApi();
+    let db = null;
+    try { if (window.claude && typeof window.claude.use === "function") db = await window.claude.use("db"); } catch (e) { db = null; }
+    if (!db) return this.modoLocal();
+    this.db = db;
+    let llego = false;
+    const timer = setTimeout(() => { if (!llego) estado("Sin conexión a la nube todavía: lo que veas puede no estar al día", false); }, 10000);
+    try {
+      db.collection("meses").onSnapshot(snap => {
+        llego = true; if (!snap.metadata.fromCache) clearTimeout(timer);
+        const nuevos = {};
+        snap.docs.forEach(d => { const x = d.data(); if (x && Array.isArray(x.items)) nuevos[d.id] = x.items; });
+        S.meses = nuevos; S.modo = "nube";
+        estado(snap.metadata.fromCache ? "Nube · sincronizando…" : "Guardado en tu nube privada", !snap.metadata.fromCache);
+        render();
+      }, err => { clearTimeout(timer); this.falla(err); });
+      db.doc("config/ajustes").onSnapshot(snap => {
+        if (snap.exists) { const c = snap.data(); S.cfg = Object.assign(JSON.parse(JSON.stringify(CFG_DEF)), c && c.cfg ? c.cfg : {}); render(); }
+      }, err => this.falla(err));
+    } catch (e) { clearTimeout(timer); this.falla(e); }
+  },
+  falla(err) {
+    if (S.modo === "local") return;
+    console.warn("db", err && err.code);
+    this.db = null; this.modoLocal("La nube no respondió: guardando en este dispositivo");
+  },
+  modoLocal(msg) {
+    S.modo = "local";
+    try { const raw = localStorage.getItem(LS_KEY); if (raw) { const d = JSON.parse(raw); S.meses = d.meses || {}; if (d.cfg) S.cfg = Object.assign(JSON.parse(JSON.stringify(CFG_DEF)), d.cfg); } }
+    catch (e) { msg = "Este navegador no deja guardar: exportá un respaldo seguido"; }
+    estado(msg || "Guardado en este dispositivo", true);
+    render();
+  },
+  persistLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify({ v: VERSION, meses: S.meses, cfg: S.cfg })); return true; } catch (e) { toast("No se pudo guardar en este navegador. Exportá un respaldo."); return false; } },
+  /** Escribe un mes completo (una escritura a la vez por documento). */
+  guardarMes(m) {
+    if (S.modo !== "nube" || !this.db) { this.persistLocal(); return Promise.resolve(); }
+    const items = itemsMes(m).slice();
+    const ref = this.db.doc("meses/" + m);
+    const prev = this.colas[m] || Promise.resolve();
+    const p = prev.catch(() => {}).then(() => items.length ? ref.set({ items, actualizado: new Date().toISOString() }) : ref.delete())
+      .catch(e => { toast(e && e.code === "quota_exceeded" ? "La nube está llena: exportá y borrá meses viejos." : "No se pudo guardar en la nube. Reintentá."); throw e; });
+    this.colas[m] = p; return p;
+  },
+  guardarCfg() {
+    if (S.modo === "api") { guardarCache(); return Cola.poner({ accion: "cfg", cfg: JSON.parse(JSON.stringify(S.cfg)) }); }
+    if (S.modo !== "nube" || !this.db) { this.persistLocal(); return Promise.resolve(); }
+    const ref = this.db.doc("config/ajustes"), cfg = JSON.parse(JSON.stringify(S.cfg));
+    const prev = this.colas._cfg || Promise.resolve();
+    return this.colas._cfg = prev.catch(() => {}).then(() => ref.set({ cfg, actualizado: new Date().toISOString() })).catch(() => toast("No se pudo guardar la configuración."));
+  }
+};
+/* ============================================================
+   SERVIDOR PROPIO (Apps Script + planilla en Google Drive)
+   ============================================================ */
+const Api = {
+  url: () => String(window.MP_API || "").trim(),
+  tok() { try { return localStorage.getItem(LS_TOK) || ""; } catch (e) { return ""; } },
+  setTok(t) { try { t ? localStorage.setItem(LS_TOK, t) : localStorage.removeItem(LS_TOK); } catch (e) {} },
+  async llamar(q, conToken = true) {
+    const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 35000);
+    try {
+      const body = JSON.stringify(conToken ? Object.assign({ token: this.tok() }, q) : q);
+      const r = await fetch(this.url(), { method: "POST", body, headers: { "Content-Type": "text/plain;charset=utf-8" }, redirect: "follow", cache: "no-store", credentials: "omit", signal: ctl.signal });
+      let j; try { j = await r.json(); } catch (e) { const x = new Error("Respuesta inválida del servidor"); x.code = "RED"; throw x; }
+      if (!j.ok) { const x = new Error(j.error || "Error del servidor"); x.code = j.code || "ERR"; throw x; }
+      return j;
+    } catch (e) { if (!e.code) e.code = "RED"; throw e; }
+    finally { clearTimeout(to); }
+  }
+};
+function dispositivo() {
+  const u = navigator.userAgent;
+  const so = /Android/i.test(u) ? "Android" : /iPhone|iPad/i.test(u) ? "iPhone" : /Windows/i.test(u) ? "Windows" : /Mac/i.test(u) ? "Mac" : "Otro";
+  const nav = /Edg\//.test(u) ? "Edge" : /Chrome\//.test(u) ? "Chrome" : /Safari\//.test(u) ? "Safari" : /Firefox\//.test(u) ? "Firefox" : "Navegador";
+  return so + " · " + nav;
+}
+function deItems(items) {
+  const M = {};
+  (items || []).forEach(x => { if (validoItem(x)) (M[mesDe(x.f)] = M[mesDe(x.f)] || []).push(x); });
+  for (const m in M) M[m].sort((a, b) => a.f.localeCompare(b.f) || a.ts - b.ts);
+  return M;
+}
+const Cola = {
+  lista: [], corriendo: false, reintento: null,
+  cargar() { try { this.lista = JSON.parse(localStorage.getItem(LS_COLA) || "[]"); } catch (e) { this.lista = []; } },
+  guardar() { try { localStorage.setItem(LS_COLA, JSON.stringify(this.lista)); } catch (e) {} },
+  poner(q) {
+    if (q.accion === "cfg") this.lista = this.lista.filter(x => x.accion !== "cfg");
+    this.lista.push(q); this.guardar(); return this.vaciar();
+  },
+  async vaciar() {
+    if (this.corriendo) return; this.corriendo = true; clearTimeout(this.reintento);
+    try {
+      while (this.lista.length) {
+        estado(`Guardando en Drive… (${this.lista.length})`, false);
+        const q = this.lista[0];
+        try { await Api.llamar(q); this.lista.shift(); this.guardar(); }
+        catch (e) {
+          if (e.code === "RED" || e.code === "BUSY") { estado(`Sin conexión: ${this.lista.length} cambio${this.lista.length > 1 ? "s" : ""} pendiente${this.lista.length > 1 ? "s" : ""} (se suben solos)`, false); this.reintento = setTimeout(() => this.vaciar(), 20000); return; }
+          if (e.code === "AUTH") { mostrarLogin("Tu sesión venció. Ingresá tu PIN: los cambios pendientes se suben después."); return; }
+          this.lista.shift(); this.guardar(); toast("No se guardó un cambio: " + e.message, 4000); await sincronizar(); return;
+        }
+      }
+      estado("Guardado en tu Drive privado", true);
+    } finally { this.corriendo = false; }
+  }
+};
+function guardarCache() { try { localStorage.setItem(LS_CACHE, JSON.stringify({ meses: S.meses, cfg: S.cfg, ts: Date.now() })); } catch (e) {} }
+async function sincronizar() {
+  if (Cola.lista.length) return Cola.vaciar();
+  try {
+    const d = await Api.llamar({ accion: "datos" });
+    S.meses = deItems(d.items);
+    if (d.cfg) S.cfg = Object.assign(JSON.parse(JSON.stringify(CFG_DEF)), sanearCfg(d.cfg));
+    S.ultimaSync = Date.now(); guardarCache();
+    estado("Guardado en tu Drive privado", true); render();
+  } catch (e) {
+    if (e.code === "AUTH") return mostrarLogin();
+    estado(S.ultimaSync || Object.keys(S.meses).length ? "Sin conexión: mostrando lo último guardado en este equipo" : "No se pudo conectar con el servidor", false);
+  }
+}
+async function iniciarApi() {
+  S.modo = "api";
+  try { const c = JSON.parse(localStorage.getItem(LS_CACHE) || "null"); if (c) { S.meses = c.meses || {}; if (c.cfg) S.cfg = Object.assign(JSON.parse(JSON.stringify(CFG_DEF)), c.cfg); } } catch (e) {}
+  Cola.cargar();
+  if (!Api.tok()) return mostrarLogin();
+  render();
+  await Cola.vaciar(); await sincronizar();
+}
+async function mostrarLogin(msg) {
+  S.modo = "login"; S.loginMsg = msg || ""; S.alta = false;
+  estado("Ingresá tu PIN", false); render();
+  try { const e = await Api.llamar({ accion: "estado" }, false); if (!e.pinConfigurado) { S.alta = !!e.altaHabilitada; S.sinPin = !e.altaHabilitada; render(); } }
+  catch (e) { S.loginMsg = "No hay conexión con el servidor. Revisá internet."; render(); }
+}
+function vLogin(app) {
+  const pin = h("input", { class: "f", type: "password", inputmode: "numeric", autocomplete: S.alta ? "new-password" : "current-password", maxlength: "8", placeholder: "PIN", "aria-label": "PIN", style: "font-size:24px;letter-spacing:.3em;text-align:center" });
+  const pin2 = h("input", { class: "f", type: "password", inputmode: "numeric", autocomplete: "new-password", maxlength: "8", placeholder: "Repetí el PIN", "aria-label": "Repetí el PIN", style: "font-size:24px;letter-spacing:.3em;text-align:center;margin-top:8px" });
+  const btn = h("button", { class: "btn pri", type: "button", style: "margin-top:12px", text: S.alta ? "Crear mi PIN y entrar" : "Entrar" });
+  const ir = async () => {
+    const v = pin.value.trim();
+    if (!/^\d{6,8}$/.test(v)) { toast("El PIN tiene de 6 a 8 números."); return; }
+    if (S.alta && v !== pin2.value.trim()) { toast("Los dos PIN no coinciden."); return; }
+    btn.disabled = true; btn.textContent = "Verificando…";
+    try {
+      const r = await Api.llamar({ accion: S.alta ? "configurarPin" : "login", pin: v, disp: dispositivo() }, false);
+      Api.setTok(r.token); S.modo = "api"; toast(S.alta ? "PIN creado. ¡Listo!" : "Hola de nuevo 👋");
+      render(); await Cola.vaciar(); await sincronizar();
+    } catch (e) { btn.disabled = false; btn.textContent = S.alta ? "Crear mi PIN y entrar" : "Entrar"; pin.value = ""; pin2.value = ""; toast(e.code === "RED" ? "Sin conexión con el servidor." : e.message, 4000); pin.focus(); }
+  };
+  [pin, pin2].forEach(x => x.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); ir(); } }));
+  btn.addEventListener("click", ir);
+  app.append(h("section", { class: "card", style: "text-align:center;padding:26px 18px" },
+    document.getElementById("tplFlor").content.cloneNode(true),
+    h("h2", { style: "font-size:20px;margin:6px 0", text: S.alta ? "Elegí tu PIN" : "Ingresá tu PIN" }),
+    h("p", { class: "hint", text: S.alta ? "De 6 a 8 números, que no sea repetido (111111) ni correlativo (123456). No lo compartas por chat." : S.sinPin ? "El servidor todavía no tiene PIN: hay que habilitar el alta desde el editor (prepararMiPlata)." : "Tus datos están en una planilla privada del Drive. Este equipo queda recordado 30 días." }),
+    S.loginMsg ? h("p", { class: "tip w", text: S.loginMsg }) : null,
+    pin, S.alta ? pin2 : null, btn));
+  setTimeout(() => pin.focus(), 50);
+}
+
+function estado(txt, ok) {
+  const e = $("#estado"); e.classList.toggle("ok", !!ok); e.lastElementChild.textContent = txt;
+}
+
+/* ---------- operaciones sobre movimientos ---------- */
+function agregarItems(lista) {
+  const tocados = new Set();
+  lista.forEach(it => { const m = mesDe(it.f); (S.meses[m] = S.meses[m] || []).push(it); tocados.add(m); });
+  tocados.forEach(m => S.meses[m].sort((a, b) => a.f.localeCompare(b.f) || a.ts - b.ts));
+  render();
+  return Store.op({ accion: "alta", items: lista }, [...tocados]);
+}
+function borrarItem(id) {
+  for (const m in S.meses) { const i = S.meses[m].findIndex(x => x.id === id); if (i >= 0) { S.meses[m].splice(i, 1); if (!S.meses[m].length) delete S.meses[m]; render(); return Store.op({ accion: "borrar", ids: [id] }, [m]); } }
+}
+function borrarGrupo(g) {
+  const tocados = [];
+  for (const m in S.meses) { const n = S.meses[m].length; S.meses[m] = S.meses[m].filter(x => x.g !== g); if (S.meses[m].length !== n) tocados.push(m); if (!S.meses[m].length) delete S.meses[m]; }
+  render(); return Store.op({ accion: "borrarGrupo", g }, tocados);
+}
+function reemplazarItem(id, nuevo) {
+  for (const m in S.meses) {
+    const i = S.meses[m].findIndex(x => x.id === id);
+    if (i >= 0) {
+      S.meses[m].splice(i, 1); if (!S.meses[m].length) delete S.meses[m];
+      const m2 = mesDe(nuevo.f); (S.meses[m2] = S.meses[m2] || []).push(nuevo);
+      S.meses[m2].sort((a, b) => a.f.localeCompare(b.f) || a.ts - b.ts);
+      render();
+      return Store.op({ accion: "editar", item: nuevo }, [...new Set([m, m2])]);
+    }
+  }
+}
+/** Arma los items de un alta (con cuotas si corresponde). */
+function armarAlta({ t, m, c, p, f, n, d, cuotas, fx }) {
+  const base = { t, c, p, n: n || "", ts: Date.now() };
+  if (d) base.d = d; if (fx) base.fx = fx;
+  if (t === "e" && cuotas > 1) {
+    const g = uid(), cu = Math.round(m / cuotas * 100) / 100;
+    return Array.from({ length: cuotas }, (_, k) => Object.assign({}, base, {
+      id: uid() + k, f: fechaEnMes(f, k), m: k === cuotas - 1 ? Math.round((m - cu * (cuotas - 1)) * 100) / 100 : cu,
+      g, q: (k + 1) + "/" + cuotas, ts: base.ts + k, d: k === 0 ? base.d : undefined
+    }));
+  }
+  return [Object.assign({ id: uid(), f, m }, base)];
+}
+
+/* ---------- carga rápida en texto ---------- */
+function interpretar(txt) {
+  const s = norm(txt);
+  const cands = [...s.matchAll(/[+-]?\$?\s*\d[\d.,]*\s*(mil\b|k\b|m\b|millones\b)?/g)].filter(x => !/^\s*cuotas?/.test(s.slice(x.index + x[0].length)));
+  const mm = cands[0];
+  if (!mm) return null;
+  const monto = parseMonto(mm[0].replace(/^[+-]/, ""));
+  if (!(monto > 0)) return null;
+  let cat = null; for (const [re, c] of KW) if (re.test(s)) { cat = c; break; }
+  let medio = null; for (const [re, c] of KWM) if (re.test(s)) { medio = c; break; }
+  const cuo = s.match(/(\d{1,2})\s*cuotas?/);
+  const esIng = /^\s*\+/.test(s) || /cobre|me pagaron|ingreso|entro/.test(s) || (cat && S.cfg.catI.some(x => x[0] === cat));
+  const t = esIng ? "i" : "e";
+  if (cat && !catsDe(t).some(x => x[0] === cat)) cat = null;
+  if (!cat) cat = t === "i" ? (S.cfg.catI[0] || ["Otros ingresos"])[0] : "Otros";
+  if (medio && !S.cfg.medios.includes(medio)) medio = null;
+  let nota = txt.replace(mm[0].trim(), "").replace(/\s+/g, " ").trim();
+  if (cuo) nota = nota.replace(new RegExp(cuo[0], "i"), "").trim();
+  nota = nota.replace(/(^|\s)(mp|mercado ?pago|d[eé]bito|deb|cr[eé]dito|cred|efectivo|ef|transf(erencia)?|en|con|\$)(?=\s|$)/gi, " ").replace(/^\+/, "").replace(/\s+/g, " ").trim();
+  return { t, m: monto, c: cat, p: medio || S.form.p || S.cfg.medios[0], n: nota, cuotas: cuo ? Math.min(48, +cuo[1]) : 1 };
+}
+
+/* ============================================================
+   CÁLCULOS
+   ============================================================ */
+function resumen(m) {
+  const L = itemsMes(m);
+  const R = { ing: 0, egr: 0, desc: 0, porCat: {}, porMedio: {}, porDia: {}, fijosE: 0, credito: 0, n: L.length };
+  L.forEach(x => {
+    if (x.t === "i") R.ing += x.m;
+    else {
+      R.egr += x.m; R.porCat[x.c] = (R.porCat[x.c] || 0) + x.m; R.porMedio[x.p] = (R.porMedio[x.p] || 0) + x.m;
+      R.porDia[x.f] = (R.porDia[x.f] || 0) + x.m; if (x.fx) R.fijosE += x.m; if (x.p === "Crédito") R.credito += x.m;
+    }
+    if (x.d) R.desc += x.d;
+  });
+  R.saldo = R.ing - R.egr;
+  R.tasa = R.ing > 0 ? R.saldo / R.ing * 100 : null;
+  return R;
+}
+function fijosPendientes(m) {
+  const L = itemsMes(m);
+  return S.cfg.fijos.filter(fj => !L.some(x => x.fx === fj.id));
+}
+function proyeccion(m) {
+  const t = hoy(); if (m !== mesDe(t)) return null;
+  const R = resumen(m), dia = +t.slice(8, 10), total = diasDelMes(m);
+  const variable = R.egr - R.fijosE - cuotasViejas(m);
+  // Los primeros días el ritmo es engañoso: se mezcla con el del mes anterior.
+  const mp = sumMes(m, -1), Rp = resumen(mp), varPrev = Rp.egr - Rp.fijosE - cuotasViejas(mp);
+  let promDia = variable / dia, base = "este mes";
+  if (dia < 10 && varPrev > 0) { const w = dia / 10; promDia = w * promDia + (1 - w) * varPrev / diasDelMes(mp); base = "mezcla con " + MESES[+mp.slice(5) - 1]; }
+  else if (dia < 5) return { temprano: true, restan: total - dia };
+  const pend = fijosPendientes(m);
+  const pendE = pend.filter(f => f.t !== "i").reduce((a, f) => a + f.m, 0);
+  const pendI = pend.filter(f => f.t === "i").reduce((a, f) => a + f.m, 0);
+  const egrFin = R.egr + promDia * (total - dia) + pendE;
+  const ingFin = R.ing + pendI;
+  return { promDia, egrFin, ingFin, saldoFin: ingFin - egrFin, restan: total - dia, pendE, pendI, base };
+}
+/** Cuotas 2/N en adelante: ya estaban comprometidas, no son gasto del día a día. */
+function cuotasViejas(m) { return itemsMes(m).filter(x => x.t === "e" && x.q && !x.q.startsWith("1/")).reduce((a, x) => a + x.m, 0); }
+function consejos(m) {
+  const out = [], R = resumen(m), Rp = resumen(sumMes(m, -1)), P0 = proyeccion(m), P = P0 && !P0.temprano ? P0 : null;
+  if (!R.n) return out;
+  Object.entries(S.cfg.presu).forEach(([c, tope]) => {
+    if (!(tope > 0)) return; const g = R.porCat[c] || 0;
+    if (g > tope) out.push(["b", "🚨", `${c}: te pasaste ${money(g - tope)} del tope (${money(tope)}).`, 3]);
+    else if (P && g / tope > (31 - P.restan) / 31 + 0.15 && g / tope > 0.6) out.push(["w", "⚠️", `${c}: ya usaste el ${Math.round(g / tope * 100)} % del tope y faltan ${P.restan} días.`, 2]);
+  });
+  if (P && P.saldoFin < 0) out.push(["b", "📉", `A este ritmo cerrás el mes en ${money(P.saldoFin)}. Para llegar a cero tenés que bajar ${money(-P.saldoFin / Math.max(1, P.restan))} por día.`, 3]);
+  else if (P && R.ing > 0) {
+    const obj = (S.cfg.objAhorro || 0) / 100 * P.ingFin;
+    if (P.saldoFin < obj) out.push(["w", "🎯", `Proyectás ahorrar ${money(P.saldoFin)}; tu objetivo del ${S.cfg.objAhorro} % es ${money(obj)}. Te faltan ${money(obj - P.saldoFin)}.`, 2]);
+    else out.push(["g", "✅", `Vas bien: proyectás ahorrar ${money(P.saldoFin)} (${Math.round(P.saldoFin / P.ingFin * 100)} % de lo que entra).`, 1]);
+  }
+  if (Rp.egr > 0) {
+    let peor = null;
+    Object.entries(R.porCat).forEach(([c, v]) => { const a = Rp.porCat[c] || 0; if (a > 0 && v > a * 1.3 && v - a > (peor ? peor[1] : 0)) peor = [c, v - a, Math.round((v / a - 1) * 100)]; });
+    if (peor) out.push(["w", "🔎", `${peor[0]} subió ${peor[2]} % vs. ${MESES[+sumMes(m, -1).slice(5) - 1]} (${money(peor[1])} más).`, 2]);
+  }
+  if (R.egr > 0 && R.credito / R.egr > 0.4) out.push(["w", "💳", `El ${Math.round(R.credito / R.egr * 100)} % de lo que gastaste fue con crédito: ojo con el resumen del mes que viene.`, 1]);
+  if (!R.ing && R.egr) out.push(["", "💼", "Todavía no cargaste ingresos este mes: sumalos para ver tu ahorro real.", 1]);
+  const pend = fijosPendientes(m); if (pend.length && m === mesDe(hoy())) out.push(["", "📌", `Tenés ${pend.length} gasto${pend.length > 1 ? "s" : ""} fijo${pend.length > 1 ? "s" : ""} sin cargar este mes (${money(pend.filter(f => f.t !== "i").reduce((a, f) => a + f.m, 0))}).`, 1]);
+  return out.sort((a, b) => b[3] - a[3]).slice(0, 3);
+}
+
+/* ============================================================
+   VISTAS
+   ============================================================ */
+const PALETA = ["#ec4899","#f97316","#8b5cf6","#14b8a6","#facc15","#f43f5e","#06b6d4","#a855f7","#84cc16","#fb923c","#e879f9","#94a3b8"];
+function render() {
+  const app = $("#app"); const y = window.scrollY;
+  app.textContent = "";
+  document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === S.tab));
+  $("nav.tabs").classList.toggle("hidden", S.modo === "login");
+  if (S.modo === "login") { vLogin(app); return; }
+  ({ hoy: vHoy, mes: vMes, proy: vProy, movs: vMovs, ajustes: vAjustes })[S.tab](app);
+  window.scrollTo(0, y);
+}
+function tarjetaResumen(m) {
+  const R = resumen(m), P0 = proyeccion(m), P = P0 && !P0.temprano ? P0 : null;
+  return h("section", { class: "card hero", "aria-label": "Resumen del mes" },
+    h("div", { class: "kpi big" }, h("div", { class: "l", text: "Saldo de " + nombreMes(m) }),
+      h("div", { class: "v " + (R.saldo >= 0 ? "pos" : "neg"), text: money(R.saldo) }),
+      h("div", { class: "s", text: R.tasa != null ? `Ahorrás el ${Math.round(R.tasa)} % de lo que entra` : "Cargá tus ingresos para ver cuánto ahorrás" })),
+    h("div", { class: "kpi" }, h("div", { class: "l", text: "Entró" }), h("div", { class: "v pos", text: moneyK(R.ing) })),
+    h("div", { class: "kpi" }, h("div", { class: "l", text: "Salió" }), h("div", { class: "v neg", text: moneyK(R.egr) })),
+    P ? h("div", { class: "kpi big", style: "border-top:1px solid var(--line);padding-top:10px" },
+      h("div", { class: "l", text: "Si seguís a este ritmo, cerrás el mes en" }),
+      h("div", { class: "v " + (P.saldoFin >= 0 ? "pos" : "neg"), style: "font-size:22px", text: money(P.saldoFin) }),
+      h("div", { class: "s", text: `Gasto del día a día: ${money(P.promDia)} por día (${P.base}) · faltan ${P.restan} días` + (P.pendE ? ` · fijos por pagar ${moneyK(P.pendE)}` : "") })) : null,
+    P0 && P0.temprano ? h("div", { class: "kpi big" }, h("div", { class: "s", text: "📈 La proyección de cierre aparece desde el día 5 (o antes si ya tenés un mes cargado)." })) : null,
+    R.desc ? h("div", { class: "kpi big" }, h("div", { class: "s", text: `🏷️ Este mes te ahorraste ${money(R.desc)} con promos y descuentos.` })) : null,
+    S.cfg.saldoMP > 0 && tnaUsada() ? h("div", { class: "kpi big" }, h("div", { class: "s money", text: `🌼 Tu saldo en Mercado Pago rinde ≈ ${money(rinde(S.cfg.saldoMP, tnaUsada(), 1))} por día (${fmtPct(tnaUsada())} TNA).` })) : null
+  );
+}
+function vHoy(app) {
+  const t = hoy();
+  app.append(tarjetaResumen(mesDe(t)));
+  // --- formulario de alta ---
+  const F = S.form;
+  if (!F.p || !S.cfg.medios.includes(F.p)) F.p = S.cfg.medios[0];
+  const inMonto = h("input", { id: "monto", inputmode: "decimal", autocomplete: "off", placeholder: "0", "aria-label": "Monto" });
+  const inNota = h("input", { class: "f", id: "nota", placeholder: "Detalle (opcional): Coto, nafta, sueldo…", maxlength: "120", autocomplete: "off" });
+  const inFecha = h("input", { class: "f", type: "date", id: "fecha", value: t, max: sumMes(mesDe(t), 24) + "-28", "aria-label": "Fecha" });
+  const inDesc = h("input", { class: "f", id: "desc", inputmode: "decimal", placeholder: "Descuento/promo ($)", autocomplete: "off", "aria-label": "Descuento obtenido" });
+  const selCuotas = h("select", { class: "f", id: "cuotas", "aria-label": "Cuotas" }, [1, 2, 3, 6, 9, 12, 18, 24].map(n => h("option", { value: n, text: n === 1 ? "1 pago" : n + " cuotas" })));
+  const boxCuotas = h("div", { class: F.p === "Crédito" && F.t === "e" ? "" : "hidden" }, selCuotas);
+  const segE = h("button", { type: "button", class: "e" + (F.t === "e" ? " on" : ""), text: "− Gasto", "aria-pressed": F.t === "e", onclick: () => { F.t = "e"; F.c = null; render(); } });
+  const segI = h("button", { type: "button", class: "i" + (F.t === "i" ? " on" : ""), text: "+ Ingreso", "aria-pressed": F.t === "i", onclick: () => { F.t = "i"; F.c = null; render(); } });
+  const cats = catsDe(F.t);
+  if (!F.c || !cats.some(c => c[0] === F.c)) F.c = null;
+  const chipsC = h("div", { class: "chips", role: "group", "aria-label": "Categoría" }, cats.map(([c, ic]) =>
+    h("button", { type: "button", class: "chip" + (F.c === c ? " on" : ""), "aria-pressed": F.c === c, onclick: e => { F.c = c; chipsC.querySelectorAll(".chip").forEach(x => { x.classList.remove("on"); x.setAttribute("aria-pressed", "false"); }); e.currentTarget.classList.add("on"); e.currentTarget.setAttribute("aria-pressed", "true"); } }, ic + " " + c)));
+  const chipsM = h("div", { class: "chips", role: "group", "aria-label": "Medio de pago" }, S.cfg.medios.map(mm =>
+    h("button", { type: "button", class: "chip" + (F.p === mm ? " on" : ""), "aria-pressed": F.p === mm, onclick: e => {
+      F.p = mm; guardarUI({ medio: mm });
+      chipsM.querySelectorAll(".chip").forEach(x => { x.classList.remove("on"); x.setAttribute("aria-pressed", "false"); }); e.currentTarget.classList.add("on"); e.currentTarget.setAttribute("aria-pressed", "true");
+      boxCuotas.classList.toggle("hidden", !(mm === "Crédito" && F.t === "e"));
+    } }, mm)));
+  const guardar = async () => {
+    const m = parseMonto(inMonto.value);
+    if (!(m > 0)) { toast("Poné un monto mayor a cero."); inMonto.focus(); return; }
+    if (!F.c) { toast("Elegí una categoría."); return; }
+    const f = inFecha.value || t, d = parseMonto(inDesc.value);
+    const cuotas = F.t === "e" && F.p === "Crédito" ? +selCuotas.value : 1;
+    const items = armarAlta({ t: F.t, m, c: F.c, p: F.p, f, n: inNota.value.trim(), d: d > 0 ? d : 0, cuotas });
+    const tipo = F.t; F.c = null;
+    toast((tipo === "e" ? "Gasto" : "Ingreso") + " cargado: " + money(m) + (cuotas > 1 ? ` en ${cuotas} cuotas de ${money(items[0].m)}` : ""));
+    await agregarItems(items).catch(() => {});
+  };
+  const inQuick = h("input", { class: "f", id: "rapida", placeholder: "Ej: 3500 nafta mp · +850000 sueldo · 120000 tele 6 cuotas", autocomplete: "off", "aria-label": "Carga rápida" });
+  const rapida = async () => {
+    const r = interpretar(inQuick.value);
+    if (!r) { toast("No encontré un monto. Probá: 3500 nafta mp"); return; }
+    if (r.cuotas > 1 && r.t === "e") r.p = "Crédito";
+    const items = armarAlta(Object.assign(r, { f: t }));
+    await agregarItems(items).catch(() => {});
+    toast(`${r.t === "e" ? "Gasto" : "Ingreso"} · ${r.c} · ${money(r.m)} · ${r.p}` + (r.cuotas > 1 ? ` · ${r.cuotas} cuotas` : ""), 3500);
+  };
+  inQuick.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); rapida(); } });
+  inMonto.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); guardar(); } });
+
+  app.append(h("section", { class: "card", "aria-label": "Carga rápida" },
+    h("h2", {}, "⚡ Carga en una línea", h("small", { text: "monto + qué + cómo pagaste" })),
+    h("div", { class: "quick" }, inQuick, h("button", { class: "btn", type: "button", text: "Cargar", onclick: rapida })),
+    h("p", { class: "hint", text: "Entiendo categorías (coto, nafta, luz, vete, netflix…), medios (mp, débito, crédito, efectivo, transf) y cuotas. Con «+» adelante es un ingreso." })));
+
+  app.append(h("section", { class: "card", "aria-label": "Nuevo movimiento" },
+    h("div", { class: "seg", role: "group", "aria-label": "Tipo" }, segE, segI),
+    h("div", { class: "amount" }, h("span", { text: "$" }), inMonto),
+    h("div", { class: "lbl", text: "Categoría" }), chipsC,
+    h("div", { class: "lbl", text: F.t === "e" ? "¿Cómo pagaste?" : "¿Dónde entró?" }), chipsM,
+    h("div", { class: "lbl", text: "Detalle" }), inNota,
+    h("div", { class: "grid2", style: "margin-top:8px" }, inFecha, F.t === "e" ? inDesc : h("span")),
+    h("div", { style: "margin-top:8px" }, boxCuotas),
+    h("div", { style: "margin-top:12px" }, h("button", { class: "btn pri", type: "button", text: F.t === "e" ? "Guardar gasto" : "Guardar ingreso", onclick: guardar }))));
+
+  // --- hoy ---
+  const L = itemsMes(mesDe(t)).filter(x => x.f === t).slice().reverse();
+  const tI = L.filter(x => x.t === "i").reduce((a, x) => a + x.m, 0), tE = L.filter(x => x.t === "e").reduce((a, x) => a + x.m, 0);
+  app.append(h("section", { class: "card", "aria-label": "Movimientos de hoy" },
+    h("h2", {}, "Hoy", h("small", { class: "money", text: L.length ? `entró ${money(tI)} · salió ${money(tE)}` : "" })),
+    L.length ? h("ul", { class: "list" }, L.map(filaMov)) : h("p", { class: "empty", text: "Todavía no cargaste nada hoy." })));
+
+  const pend = fijosPendientes(mesDe(t));
+  if (pend.length) app.append(tarjetaFijos(mesDe(t), pend));
+}
+function filaMov(x) {
+  return h("li", { class: "mv", tabindex: "0", role: "button", "aria-label": `${x.t === "e" ? "Gasto" : "Ingreso"} ${x.c} ${money(x.m)}. Tocar para editar`, onclick: () => editar(x), onkeydown: e => { if (e.key === "Enter") editar(x); } },
+    h("div", { class: "ic " + x.t, text: iconoCat(x.c) }),
+    h("div", { class: "tx" }, h("div", { class: "t1", text: x.n || x.c }),
+      h("div", { class: "t2", text: [x.n ? x.c : null, x.p, x.q ? "cuota " + x.q : null, x.fx ? "fijo" : null, x.d ? "ahorro " + money(x.d) : null].filter(Boolean).join(" · ") })),
+    h("div", { class: "am " + (x.t === "e" ? "neg" : "pos"), text: (x.t === "e" ? "−" : "+") + money(x.m).replace("$ ", "$") }));
+}
+function tarjetaFijos(m, pend) {
+  return h("section", { class: "card", "aria-label": "Fijos pendientes" },
+    h("h2", {}, "📌 Fijos de " + MESES[+m.slice(5) - 1] + " sin cargar"),
+    h("ul", { class: "list" }, pend.map(fj => h("li", { class: "mv", style: "cursor:default" },
+      h("div", { class: "ic " + (fj.t === "i" ? "i" : "e"), text: iconoCat(fj.c) }),
+      h("div", { class: "tx" }, h("div", { class: "t1", text: fj.n }), h("div", { class: "t2", text: `${fj.c} · ${fj.p} · día ${fj.dia || 1}` })),
+      h("div", { class: "am money", text: money(fj.m) }),
+      h("button", { class: "btn sm", type: "button", text: "Cargar", onclick: () => cargarFijo(m, fj) })))),
+    pend.length > 1 ? h("button", { class: "btn sm", type: "button", style: "margin-top:8px", text: "Cargar todos", onclick: () => cargarFijos(m, pend) }) : null);
+}
+function fechaFijo(m, fj) { return m + "-" + pad(Math.min(Math.max(1, +fj.dia || 1), diasDelMes(m))); }
+function cargarFijo(m, fj) { agregarItems(armarAlta({ t: fj.t === "i" ? "i" : "e", m: fj.m, c: fj.c, p: fj.p, f: fechaFijo(m, fj), n: fj.n, fx: fj.id })).then(() => toast("Cargado: " + fj.n)).catch(() => {}); }
+function cargarFijos(m, pend) { agregarItems(pend.flatMap(fj => armarAlta({ t: fj.t === "i" ? "i" : "e", m: fj.m, c: fj.c, p: fj.p, f: fechaFijo(m, fj), n: fj.n, fx: fj.id }))).then(() => toast(pend.length + " fijos cargados")).catch(() => {}); }
+
+function barraMes() {
+  const m = S.mesSel;
+  return h("div", { class: "monthbar" },
+    h("button", { class: "btn sm", type: "button", "aria-label": "Mes anterior", text: "◀", onclick: () => { S.mesSel = sumMes(m, -1); render(); } }),
+    h("b", { text: nombreMes(m) }),
+    h("button", { class: "btn sm", type: "button", "aria-label": "Mes siguiente", text: "▶", onclick: () => { S.mesSel = sumMes(m, 1); render(); } }));
+}
+function vMes(app) {
+  const m = S.mesSel, R = resumen(m), Rp = resumen(sumMes(m, -1));
+  app.append(h("section", { class: "card" }, barraMes(),
+    h("div", { class: "hero" },
+      h("div", { class: "kpi" }, h("div", { class: "l", text: "Entró" }), h("div", { class: "v pos", text: moneyK(R.ing) }), h("div", { class: "s", text: Rp.ing ? vs(R.ing, Rp.ing) : "" })),
+      h("div", { class: "kpi" }, h("div", { class: "l", text: "Salió" }), h("div", { class: "v neg", text: moneyK(R.egr) }), h("div", { class: "s", text: Rp.egr ? vs(R.egr, Rp.egr) : "" })),
+      h("div", { class: "kpi" }, h("div", { class: "l", text: "Saldo" }), h("div", { class: "v " + (R.saldo >= 0 ? "pos" : "neg"), text: moneyK(R.saldo) })),
+      h("div", { class: "kpi" }, h("div", { class: "l", text: "Ahorro" }), h("div", { class: "v", text: R.tasa != null ? Math.round(R.tasa) + " %" : "—" }), h("div", { class: "s", text: "objetivo " + (S.cfg.objAhorro || 0) + " %" })))));
+  if (!R.n) { app.append(h("section", { class: "card empty", text: "No hay movimientos en " + nombreMes(m) + "." })); return; }
+
+  const C = consejos(m);
+  if (C.length) app.append(h("section", { class: "card" }, h("h2", { text: "💡 Lo que conviene hacer" }),
+    C.map(([k, ic, tx]) => h("div", { class: "tip " + k }, h("span", { text: ic }), h("span", { class: "money", text: tx })))));
+
+  const P = proyeccion(m);
+  if (P && !P.temprano) app.append(h("section", { class: "card" }, h("h2", { text: "📈 Cómo cerrarías el mes" }),
+    h("div", { class: "hero" },
+      h("div", { class: "kpi" }, h("div", { class: "l", text: "Saldo al cierre" }), h("div", { class: "v " + (P.saldoFin >= 0 ? "pos" : "neg"), text: moneyK(P.saldoFin) })),
+      h("div", { class: "kpi" }, h("div", { class: "l", text: "Gasto por día" }), h("div", { class: "v", text: moneyK(P.promDia) }), h("div", { class: "s", text: P.base })),
+      h("div", { class: "kpi big" }, h("div", { class: "s", text: `Proyección: entran ${moneyK(P.ingFin)} y salen ${moneyK(P.egrFin)}` + (P.pendE ? ` (incluye ${moneyK(P.pendE)} de fijos sin cargar)` : "") + `. Faltan ${P.restan} días.` })))));
+
+  // categorías: donut + Pareto
+  const cats = Object.entries(R.porCat).sort((a, b) => b[1] - a[1]);
+  if (cats.length) {
+    let acc = 0, ang = 0; const seg = [];
+    const top = cats.slice(0, 7), resto = cats.slice(7).reduce((a, x) => a + x[1], 0);
+    const parts = resto ? [...top, ["Resto", resto]] : top;
+    parts.forEach(([c, v], i) => { const a2 = ang + v / R.egr * 360; seg.push(`${PALETA[i % PALETA.length]} ${ang.toFixed(2)}deg ${a2.toFixed(2)}deg`); ang = a2; });
+    let n80 = 0; for (const [, v] of cats) { acc += v; n80++; if (acc / R.egr >= 0.8) break; }
+    app.append(h("section", { class: "card" }, h("h2", {}, "¿En qué se fue la plata?", h("small", { text: `${n80} de ${cats.length} categorías explican el 80 %` })),
+      h("div", { class: "donutw" }, h("div", { class: "donut", role: "img", "aria-label": parts.map(([c, v]) => `${c} ${Math.round(v / R.egr * 100)} %`).join(", "), style: `background:conic-gradient(${seg.join(",")})` }),
+        h("div", { class: "legend" }, parts.map(([c, v], i) => h("div", {}, h("i", { style: "background:" + PALETA[i % PALETA.length] }), `${c} · ${Math.round(v / R.egr * 100)} %`)))),
+      cats.map(([c, v]) => {
+        const tope = +S.cfg.presu[c] || 0, ant = Rp.porCat[c] || 0, pct = tope ? v / tope : v / cats[0][1];
+        return h("div", { class: "cat" },
+          h("div", { class: "h" }, h("b", { text: iconoCat(c) + " " + c }), h("span", { class: "money", text: money(v) + (tope ? ` de ${moneyK(tope)}` : "") + (ant ? ` · ${vsCorto(v, ant)}` : "") })),
+          h("div", { class: "bar" }, h("i", { class: tope ? (pct > 1 ? "x" : pct > 0.8 ? "w" : "") : "", style: `width:${Math.min(100, pct * 100).toFixed(1)}%` })));
+      })));
+  }
+  // gasto por día
+  const nd = diasDelMes(m), t = hoy(), maxD = Math.max(1, ...Object.values(R.porDia));
+  app.append(h("section", { class: "card" }, h("h2", {}, "Gasto día por día", h("small", { class: "money", text: "pico: " + money(maxD) })),
+    h("div", { class: "days", role: "img", "aria-label": "Gasto por día del mes" }, Array.from({ length: nd }, (_, i) => {
+      const f = m + "-" + pad(i + 1), v = R.porDia[f] || 0;
+      return h("div", { class: (f === t ? "today " : "") + (f > t ? "fut" : ""), title: `${i + 1}: ${money(v)}`, style: `height:${f > t ? 2 : Math.max(2, v / maxD * 100)}%` });
+    })),
+    h("div", { class: "row hint", style: "justify-content:space-between" }, h("span", { text: "1" }), h("span", { text: String(Math.ceil(nd / 2)) }), h("span", { text: String(nd) }))));
+  // por medio
+  const med = Object.entries(R.porMedio).sort((a, b) => b[1] - a[1]);
+  app.append(h("section", { class: "card" }, h("h2", { text: "Cómo pagaste" }),
+    med.map(([c, v]) => h("div", { class: "cat" }, h("div", { class: "h" }, h("b", { text: c }), h("span", { class: "money", text: `${money(v)} · ${Math.round(v / R.egr * 100)} %` })), h("div", { class: "bar" }, h("i", { style: `width:${(v / R.egr * 100).toFixed(1)}%` }))))));
+  // ingresos
+  const ing = itemsMes(m).filter(x => x.t === "i");
+  if (ing.length) {
+    const pc = {}; ing.forEach(x => pc[x.c] = (pc[x.c] || 0) + x.m);
+    app.append(h("section", { class: "card" }, h("h2", { text: "De dónde entró" }),
+      h("table", { class: "t" }, Object.entries(pc).sort((a, b) => b[1] - a[1]).map(([c, v]) => h("tr", {}, h("td", { text: iconoCat(c) + " " + c }), h("td", { class: "money", text: money(v) }))))));
+  }
+  // cuotas futuras
+  const fut = todos().filter(x => x.q && x.f > m + "-31");
+  if (fut.length) {
+    const pm = {}; fut.forEach(x => pm[mesDe(x.f)] = (pm[mesDe(x.f)] || 0) + x.m);
+    app.append(h("section", { class: "card" }, h("h2", {}, "💳 Cuotas que vienen", h("small", { text: "ya comprometido" })),
+      h("table", { class: "t" }, Object.keys(pm).sort().slice(0, 6).map(k => h("tr", {}, h("td", { text: nombreMes(k) }), h("td", { class: "money", text: money(pm[k]) }))))));
+  }
+  const pend = fijosPendientes(m); if (pend.length && m >= mesDe(hoy())) app.append(tarjetaFijos(m, pend));
+}
+function vs(a, b) { const p = Math.round((a / b - 1) * 100); return (p >= 0 ? "▲ +" : "▼ ") + p + " % vs. mes anterior"; }
+function vsCorto(a, b) { const p = Math.round((a / b - 1) * 100); return (p >= 0 ? "+" : "") + p + " %"; }
+
+function vMovs(app) {
+  const m = S.mesSel, Fl = S.filtro;
+  const q = h("input", { class: "f", type: "search", placeholder: "Buscar (detalle, categoría, medio)…", value: Fl.q, "aria-label": "Buscar" });
+  const selT = h("select", { class: "f", "aria-label": "Tipo" }, [["", "Todo"], ["e", "Gastos"], ["i", "Ingresos"]].map(([v, t]) => h("option", { value: v, text: t, selected: Fl.t === v })));
+  const selC = h("select", { class: "f", "aria-label": "Categoría" }, h("option", { value: "", text: "Todas las categorías" }), [...S.cfg.catE, ...S.cfg.catI].map(([c]) => h("option", { value: c, text: c, selected: Fl.c === c })));
+  const lista = h("div");
+  const pintar = () => {
+    lista.textContent = "";
+    const qq = norm(Fl.q);
+    const L = itemsMes(m).filter(x => (!Fl.t || x.t === Fl.t) && (!Fl.c || x.c === Fl.c) && (!qq || norm([x.n, x.c, x.p].join(" ")).includes(qq))).slice().reverse();
+    if (!L.length) { lista.append(h("p", { class: "empty", text: "Sin movimientos para mostrar." })); return; }
+    const tot = L.reduce((a, x) => a + (x.t === "i" ? x.m : -x.m), 0);
+    lista.append(h("p", { class: "hint money", text: `${L.length} movimientos · neto ${money(tot)}` }));
+    let dia = null, ul = null;
+    L.forEach(x => {
+      if (x.f !== dia) {
+        dia = x.f; const sd = L.filter(y => y.f === dia).reduce((a, y) => a + (y.t === "i" ? y.m : -y.m), 0);
+        lista.append(h("div", { class: "day" }, h("span", { text: diaTexto(dia) }), h("span", { class: "money", text: money(sd) })));
+        ul = h("ul", { class: "list" }); lista.append(ul);
+      }
+      ul.append(filaMov(x));
+    });
+  };
+  q.addEventListener("input", () => { Fl.q = q.value; pintar(); });
+  selT.addEventListener("change", () => { Fl.t = selT.value; pintar(); });
+  selC.addEventListener("change", () => { Fl.c = selC.value; pintar(); });
+  app.append(h("section", { class: "card" }, barraMes(), q, h("div", { class: "grid2", style: "margin-top:8px" }, selT, selC),
+    h("div", { class: "row", style: "margin-top:10px" },
+      h("button", { class: "btn sm", type: "button", text: "⬇️ Excel (CSV) del mes", onclick: () => exportarCSV(m) }),
+      h("button", { class: "btn sm", type: "button", text: "⬇️ Todo el historial", onclick: () => exportarCSV(null) }))),
+    h("section", { class: "card" }, lista));
+  pintar();
+}
+
+/* ============================================================
+   RENDIMIENTO DE MERCADO PAGO + PROYECTADO
+   Fuente: valor de cuotaparte de «Mercado Fondo - Clase A» (el FCI
+   donde Mercado Pago invierte los saldos remunerados), publicado por
+   la CNV y servido por la API pública ArgentinaDatos. TNA = variación
+   de los últimos ~30 días anualizada. Inflación: INDEC (misma API).
+   ============================================================ */
+const MP_FONDO = "Mercado Fondo - Clase A";
+const AD = "https://api.argentinadatos.com/v1/finanzas/";
+const Rend = {
+  dato: null, cargando: null, error: false,
+  async obtener(forzar) {
+    if (this.dato && !forzar) return this.dato;
+    if (!forzar) { try { const c = JSON.parse(localStorage.getItem("miplata.tna") || "null"); if (c && Date.now() - c.leido < 6 * 3600e3) return (this.dato = c); } catch (e) {} }
+    if (this.cargando) return this.cargando;
+    const get = async u => {
+      const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 15000);
+      try { const r = await fetch(AD + u, { cache: "no-store", credentials: "omit", signal: ctl.signal }); if (!r.ok) return null; return await r.json(); }
+      catch (e) { return null; } finally { clearTimeout(to); }
+    };
+    const fondo = j => Array.isArray(j) ? j.find(x => x && x.fondo === MP_FONDO && +x.vcp > 0) : null;
+    const dia = f => new Date(f + "T12:00:00");
+    this.cargando = (async () => {
+      const ult = fondo(await get("fci/mercadoDinero/ultimo"));
+      if (!ult) throw new Error("sin dato");
+      let base = null;
+      // La API no publica todos los fondos todos los días: busco el dato más cercano a 30 días atrás.
+      for (const k of [30, 31, 29, 32, 28, 33, 34, 27, 35, 36, 26, 37, 38, 25, 39, 40]) { if (base) break; const d = dia(ult.fecha); d.setDate(d.getDate() - k); base = fondo(await get("fci/mercadoDinero/" + d.getFullYear() + "/" + pad(d.getMonth() + 1) + "/" + pad(d.getDate())));
+      }
+      const pen = fondo(await get("fci/mercadoDinero/penultimo"));
+      const dd = (a, b) => Math.max(1, Math.round((dia(a.fecha) - dia(b.fecha)) / 864e5));
+      const tna30 = base ? (ult.vcp / base.vcp - 1) * 365 / dd(ult, base) * 100 : null;
+      const tna1 = pen && pen.fecha < ult.fecha ? (ult.vcp / pen.vcp - 1) * 365 / dd(ult, pen) * 100 : null;
+      const inf = await get("indices/inflacion");
+      const ui = Array.isArray(inf) && inf.length ? inf[inf.length - 1] : null;
+      const out = { tna: tna30 != null ? tna30 : tna1, tna30, tna1, fecha: ult.fecha, desde: base ? base.fecha : null, inflacion: ui ? +ui.valor : null, infFecha: ui ? ui.fecha : null, leido: Date.now() };
+      if (!(out.tna > 0 && out.tna < 300)) throw new Error("dato raro");
+      try { localStorage.setItem("miplata.tna", JSON.stringify(out)); } catch (e) {}
+      this.error = false;
+      return (this.dato = out);
+    })().catch(e => { this.error = true; try { const c = JSON.parse(localStorage.getItem("miplata.tna") || "null"); if (c) return (this.dato = c); } catch (x) {} return null; })
+      .finally(() => { this.cargando = null; });
+    return this.cargando;
+  }
+};
+const tnaUsada = () => (+S.cfg.tnaManual > 0 ? +S.cfg.tnaManual : Rend.dato ? Rend.dato.tna : 0);
+const fmtPct = n => fmtN.format(Math.round(n * 10) / 10) + " %";
+const fechaCorta = f => f ? (+f.slice(8, 10)) + "/" + (+f.slice(5, 7)) : "";
+/** Rinde de un saldo en N días con capitalización diaria (como acredita Mercado Pago). */
+const rinde = (saldo, tna, dias) => saldo > 0 ? saldo * (Math.pow(1 + tna / 100 / 365, dias) - 1) : 0;
+const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
+function cuotasMes(m) { return itemsMes(m).filter(x => x.t === "e" && x.q).reduce((a, x) => a + x.m, 0); }
+
+function proyectado({ horiz, recorte, pctMP, tna, saldo0 }) {
+  const hm = mesDe(hoy());
+  const cerrados = [1, 2, 3].map(k => sumMes(hm, -k)).filter(m => itemsMes(m).length);
+  const varDe = m => { const R = resumen(m); return Math.max(0, R.egr - R.fijosE - cuotasViejas(m)); };
+  // Ingresos variables: sin los que ya están como fijo (ej. el sueldo cargado a mano y también como fijo) ni rendimientos.
+  const catFijasI = new Set(S.cfg.fijos.filter(f => f.t === "i").map(f => f.c));
+  const ingVarDe = m => itemsMes(m).filter(x => x.t === "i" && !x.fx && x.c !== "Intereses" && !catFijasI.has(x.c)).reduce((a, x) => a + x.m, 0);
+  let baseVar, baseIng, fuente;
+  if (cerrados.length) { baseVar = avg(cerrados.map(varDe)); baseIng = avg(cerrados.map(ingVarDe)); fuente = cerrados.length === 1 ? "lo que pasó en " + MESES[+cerrados[0].slice(5) - 1] : `el promedio de tus últimos ${cerrados.length} meses`; }
+  else {
+    const dia = +hoy().slice(8, 10), tot = diasDelMes(hm);
+    baseVar = varDe(hm) / Math.max(dia, 5) * tot; baseIng = ingVarDe(hm); fuente = "el ritmo de este mes (se afina cuando cierre el mes)";
+  }
+  const fijosI = S.cfg.fijos.filter(f => f.t === "i").reduce((a, f) => a + f.m, 0);
+  const fijosE = S.cfg.fijos.filter(f => f.t !== "i").reduce((a, f) => a + f.m, 0);
+  const filas = []; let saldo = saldo0, totRinde = 0, totAhorro = 0;
+  // resto del mes en curso
+  const P = proyeccion(hm), R = resumen(hm), diasRest = diasDelMes(hm) - (+hoy().slice(8, 10));
+  if (P && !P.temprano && diasRest > 0) {
+    const ing = Math.max(0, P.ingFin - R.ing), egr = Math.max(0, (P.egrFin - R.egr) * (1 - recorte / 100));
+    const ah = ing - egr, r = rinde(saldo, tna, diasRest);
+    saldo += r + (ah >= 0 ? ah * pctMP / 100 : ah); saldo = Math.max(0, saldo); totRinde += r; totAhorro += ah;
+    filas.push({ m: hm, resto: true, ing, egr, ah, r, saldo });
+  }
+  for (let k = 1; k <= horiz; k++) {
+    const m = sumMes(hm, k), cu = cuotasMes(m);
+    const ing = fijosI + baseIng, egr = fijosE + cu + baseVar * (1 - recorte / 100);
+    const ah = ing - egr, r = rinde(saldo, tna, diasDelMes(m));
+    saldo += r + (ah >= 0 ? ah * pctMP / 100 : ah); saldo = Math.max(0, saldo); totRinde += r; totAhorro += ah;
+    filas.push({ m, ing, egr, ah, r, cu, saldo });
+  }
+  return { filas, saldoFin: saldo, totRinde, totAhorro, baseVar, baseIng, fijosI, fijosE, fuente, sinIngresos: !(fijosI + baseIng > 0) };
+}
+
+function vProy(app) {
+  const C = S.cfg;
+  const D = Rend.dato, tna = tnaUsada();
+  // --- Mercado Pago ---
+  const inSaldo = h("input", { class: "f", inputmode: "decimal", placeholder: "¿Cuánto tenés hoy en Mercado Pago?", value: C.saldoMP ? String(C.saldoMP).replace(".", ",") : "", "aria-label": "Saldo actual en Mercado Pago" });
+  inSaldo.addEventListener("change", () => { const v = parseMonto(inSaldo.value); C.saldoMP = v > 0 ? v : 0; Store.guardarCfg(); render(); });
+  const inTna = h("input", { class: "f", inputmode: "decimal", placeholder: "TNA manual (opcional)", value: C.tnaManual ? String(C.tnaManual).replace(".", ",") : "", "aria-label": "TNA manual" });
+  inTna.addEventListener("change", () => { const v = parseMonto(inTna.value); C.tnaManual = v > 0 && v < 300 ? v : 0; Store.guardarCfg(); render(); });
+  const mensualEf = tna ? (Math.pow(1 + tna / 100 / 365, 30) - 1) * 100 : 0;
+  const real = D && D.inflacion != null && tna ? ((1 + mensualEf / 100) / (1 + D.inflacion / 100) - 1) * 100 : null;
+  app.append(h("section", { class: "card mp" },
+    h("h2", {}, "🌼 Tu plata en Mercado Pago", h("small", { text: "rinde todos los días" })),
+    h("div", { class: "hero" },
+      h("div", { class: "kpi" }, h("div", { class: "l", text: "TNA hoy" }), h("div", { class: "v", style: "color:#db2777", text: tna ? fmtPct(tna) : (Rend.cargando ? "…" : "—") }),
+        h("div", { class: "s", text: +C.tnaManual > 0 ? "cargada a mano" : D ? `Mercado Fondo · ${D.desde ? fechaCorta(D.desde) + " al " : "al "}${fechaCorta(D.fecha)}` : Rend.error ? "sin conexión al dato" : "buscando el dato…" })),
+      h("div", { class: "kpi" }, h("div", { class: "l", text: "Por mes" }), h("div", { class: "v", text: tna ? fmtPct(mensualEf) : "—" }), h("div", { class: "s", text: "efectivo en 30 días" }))),
+    h("div", { class: "lbl", text: "Saldo actual en Mercado Pago" }), inSaldo,
+    C.saldoMP > 0 && tna ? h("p", { class: "tip g money", text: `Tus ${money(C.saldoMP)} te dan ≈ ${money(rinde(C.saldoMP, tna, 1))} por día y ≈ ${money(rinde(C.saldoMP, tna, 30))} en 30 días.` }) : null,
+    real != null ? h("p", { class: "tip " + (real >= 0 ? "g" : "w"), text: real >= 0
+      ? `Le gana a la inflación: rinde ${fmtPct(mensualEf)} por mes contra ${fmtPct(D.inflacion)} de inflación (INDEC, ${MESES[+D.infFecha.slice(5, 7) - 1]}). Ganancia real ≈ ${fmtPct(real)} por mes.`
+      : `Ojo: rinde ${fmtPct(mensualEf)} por mes y la última inflación (INDEC, ${MESES[+D.infFecha.slice(5, 7) - 1]}) fue ${fmtPct(D.inflacion)}: pierde ≈ ${fmtPct(-real)} por mes en términos reales. Sirve para la plata del día a día; para ahorro de largo plazo conviene comparar otras opciones.` }) : null,
+    h("details", {}, h("summary", { class: "hint", style: "cursor:pointer;margin-top:8px", text: "¿De dónde sale la TNA? / cargarla a mano" }),
+      h("p", { class: "hint", text: "Mercado Pago invierte los saldos remunerados en el fondo «Mercado Fondo – Clase A». La app toma el valor de su cuotaparte que publica la CNV (vía la API pública ArgentinaDatos) y calcula cuánto rindió en los últimos ~30 días, anualizado. Se actualiza solo cada 6 horas. Si querés usar la TNA que te muestra la app de MP, cargala acá (vacío = automática)." }),
+      h("div", { class: "grid2" }, inTna, h("button", { class: "btn sm", type: "button", text: "🔄 Actualizar dato", onclick: async () => { await Rend.obtener(true); render(); toast(Rend.dato ? "TNA: " + fmtPct(Rend.dato.tna) : "No se pudo leer el dato"); } })))));
+
+  // --- controles ---
+  const horiz = C.horiz || 12, recorte = +C.recorte || 0, pctMP = C.pctMP == null ? 100 : +C.pctMP;
+  const P = proyectado({ horiz, recorte, pctMP, tna, saldo0: +C.saldoMP || 0 });
+  const P0 = recorte ? proyectado({ horiz, recorte: 0, pctMP, tna, saldo0: +C.saldoMP || 0 }) : null;
+  const sliderR = h("input", { type: "range", min: "0", max: "30", step: "5", value: String(recorte), "aria-label": "Recorte del gasto del día a día" });
+  const sliderP = h("input", { type: "range", min: "0", max: "100", step: "10", value: String(pctMP), "aria-label": "Parte del ahorro que dejás en Mercado Pago" });
+  let tm = null; const guardarLuego = () => { clearTimeout(tm); tm = setTimeout(() => Store.guardarCfg(), 800); };
+  const lblR = h("div", { class: "lbl", text: `Recortar el gasto del día a día: ${recorte} %` });
+  const lblP = h("div", { class: "lbl", text: `Parte del ahorro que dejás en Mercado Pago: ${pctMP} %` });
+  sliderR.addEventListener("input", () => { lblR.textContent = `Recortar el gasto del día a día: ${sliderR.value} %`; });
+  sliderP.addEventListener("input", () => { lblP.textContent = `Parte del ahorro que dejás en Mercado Pago: ${sliderP.value} %`; });
+  sliderR.addEventListener("change", () => { C.recorte = +sliderR.value; guardarLuego(); render(); });
+  sliderP.addEventListener("change", () => { C.pctMP = +sliderP.value; guardarLuego(); render(); });
+  const lastM = P.filas.length ? P.filas[P.filas.length - 1].m : sumMes(mesDe(hoy()), horiz);
+  app.append(h("section", { class: "card" },
+    h("h2", {}, "🌷 Proyectado", h("small", { text: "a dónde llegás si seguís así" })),
+    h("div", { class: "chips", role: "group", "aria-label": "Horizonte" }, [3, 6, 12, 24].map(n => h("button", { type: "button", class: "chip" + (horiz === n ? " on" : ""), "aria-pressed": horiz === n, text: n + " meses", onclick: () => { C.horiz = n; Store.guardarCfg(); render(); } }))),
+    h("div", { class: "hero", style: "margin-top:12px" },
+      h("div", { class: "kpi big" }, h("div", { class: "l", text: "En Mercado Pago a fin de " + nombreMes(lastM) }), h("div", { class: "v " + (P.saldoFin > 0 ? "pos" : "neg"), text: money(P.saldoFin) }),
+        h("div", { class: "s money", text: `Ahorro acumulado ${moneyK(P.totAhorro)} · rendimiento ${moneyK(P.totRinde)}` })),
+      P0 ? h("div", { class: "kpi big" }, h("div", { class: "s money", text: `✂️ Con ${recorte} % menos de gasto del día a día terminás con ${money(P.saldoFin - P0.saldoFin)} más que sin recortar.` })) : null),
+    lblR, sliderR, lblP, sliderP,
+    h("p", { class: "hint", style: "margin-top:8px", text: `Cálculo: ingresos y gastos fijos que cargaste en Ajustes + cuotas ya comprometidas + gasto del día a día según ${P.fuente} (${moneyK(P.baseVar)}/mes) + rendimiento de MP con capitalización diaria a ${tna ? fmtPct(tna) : "0 %"} TNA.` })));
+
+  // gráfico
+  const maxS = Math.max(1, ...P.filas.map(f => f.saldo));
+  app.append(h("section", { class: "card" }, h("h2", {}, "Cómo crece tu saldo en Mercado Pago"),
+    h("div", { class: "proy", role: "img", "aria-label": P.filas.map(f => `${nombreMes(f.m)}: ${moneyK(f.saldo)}`).join(", ") },
+      P.filas.map((f, i) => h("div", { class: f.ah < 0 ? "neg" : "", style: `height:${Math.max(2, f.saldo / maxS * 100)}%`, title: `${nombreMes(f.m)}: ${money(f.saldo)}` },
+        (i === P.filas.length - 1 || (P.filas.length <= 7)) ? h("span", { class: "money", text: moneyK(f.saldo).replace("$ ", "$") }) : null))),
+    h("div", { class: "proyx" }, P.filas.map(f => h("span", { text: (f.resto ? "resto " : "") + MESES[+f.m.slice(5) - 1].slice(0, 3) }))),
+    h("p", { class: "hint", text: "En rosa fuerte: meses en los que sale más de lo que entra (se descuenta del saldo)." })));
+
+  // consejos del proyectado
+  const tips = [];
+  if (P.sinIngresos) tips.push(["w", "💼", "Cargá tu sueldo como ingreso fijo (Ajustes → Fijos) o algún ingreso del mes: sin eso el proyectado solo muestra gastos."]);
+  const malos = P.filas.filter(f => f.ah < 0);
+  if (malos.length && !P.sinIngresos) { const peor = malos.reduce((a, b) => (b.ah < a.ah ? b : a)); tips.push(["b", "📉", `En ${nombreMes(peor.m)} sale ${money(-peor.ah)} más de lo que entra${peor.cu ? ` (hay ${money(peor.cu)} de cuotas)` : ""}. Conviene llegar con colchón en MP o evitar nuevas compras en cuotas.`]); }
+  const cuotasProx = P.filas.reduce((a, f) => a + (f.cu || 0), 0);
+  if (cuotasProx > 0) tips.push(["w", "💳", `Tenés ${money(cuotasProx)} de cuotas en los próximos ${horiz} meses: ya está restado en el proyectado.`]);
+  if (!recorte && P.baseVar > 0 && tna) { const P10 = proyectado({ horiz, recorte: 10, pctMP, tna, saldo0: +C.saldoMP || 0 }); tips.push(["g", "✂️", `Si recortás un 10 % el gasto del día a día (≈ ${money(P.baseVar * 0.1)} por mes), en ${horiz} meses tenés ${money(P10.saldoFin - P.saldoFin)} más, rendimiento de MP incluido.`]); }
+  if (pctMP < 100 && tna) tips.push(["", "🌼", `Estás dejando en MP solo el ${pctMP} % de lo que ahorrás. Todo lo que quede en la cuenta también rinde.`]);
+  if (tips.length) app.append(h("section", { class: "card" }, h("h2", { text: "💡 Para que florezca" }), tips.slice(0, 3).map(([k, ic, tx]) => h("div", { class: "tip " + k }, h("span", { text: ic }), h("span", { class: "money", text: tx })))));
+
+  // tabla
+  app.append(h("section", { class: "card" }, h("h2", { text: "Mes a mes" }),
+    h("div", { class: "scroll" }, h("table", { class: "t" },
+      h("tr", {}, ["Mes", "Entra", "Sale", "Ahorro", "Rinde MP", "Saldo MP"].map((x, i) => h("td", { style: "font-weight:700;color:var(--mut);font-size:12px" + (i ? ";text-align:right" : ""), text: x }))),
+      P.filas.map(f => h("tr", {}, h("td", { style: "text-transform:capitalize", text: (f.resto ? "resto de " : "") + MESES[+f.m.slice(5) - 1] + " " + f.m.slice(2, 4) }),
+        [f.ing, f.egr, f.ah, f.r, f.saldo].map((v, i) => h("td", { class: "money " + (i === 2 ? (v >= 0 ? "pos" : "neg") : ""), style: "text-align:right", text: moneyK(v).replace("$ ", "$") })))))),
+    h("button", { class: "btn sm", type: "button", style: "margin-top:10px", text: "⬇️ Descargar proyectado (CSV)", onclick: () => {
+      const num = n => String(Math.round(n * 100) / 100).replace(".", ",");
+      const filas = [["Mes", "Ingresos", "Egresos", "Ahorro", "Rendimiento MP", "Saldo MP"], ...P.filas.map(f => [(f.resto ? "resto de " : "") + nombreMes(f.m), num(f.ing), num(f.egr), num(f.ah), num(f.r), num(f.saldo)])];
+      descargar(`MiPlata_proyectado_${sello()}.csv`, "﻿sep=;\n" + filas.map(r => r.join(";")).join("\r\n") + `\r\n\r\nTNA usada;${num(tna)}\r\nRecorte;${recorte} %\r\nParte del ahorro en MP;${pctMP} %\r\n`, "text/csv;charset=utf-8");
+    } })));
+  if (!Rend.dato && !Rend.cargando && !(+C.tnaManual > 0)) Rend.obtener().then(() => { if (S.tab === "proy") render(); });
+}
+
+/* ---------- edición ---------- */
+function abrir(cont) { const d = $("#dlg"), i = $("#dlgIn"); i.textContent = ""; i.append(cont); if (!d.open) d.showModal(); }
+function cerrar() { const d = $("#dlg"); if (d.open) d.close(); }
+function confirmar(texto, si, etiqueta) {
+  abrir(h("div", {}, h("h3", { text: texto }), h("div", { class: "grid2" },
+    h("button", { class: "btn", type: "button", text: "Cancelar", onclick: cerrar }),
+    h("button", { class: "btn dan", type: "button", text: etiqueta || (/borrar/i.test(texto) ? "Sí, borrar" : "Sí"), onclick: () => { cerrar(); si(); } }))));
+}
+function editar(x) {
+  const inM = h("input", { class: "f", inputmode: "decimal", value: String(x.m).replace(".", ","), "aria-label": "Monto" });
+  const selT = h("select", { class: "f", "aria-label": "Tipo" }, h("option", { value: "e", text: "Gasto", selected: x.t === "e" }), h("option", { value: "i", text: "Ingreso", selected: x.t === "i" }));
+  const selC = h("select", { class: "f", "aria-label": "Categoría" });
+  const llenarC = () => { selC.textContent = ""; const cs = catsDe(selT.value); if (!cs.some(c => c[0] === x.c)) selC.append(h("option", { value: x.c, text: x.c })); cs.forEach(([c]) => selC.append(h("option", { value: c, text: c, selected: c === x.c }))); };
+  llenarC(); selT.addEventListener("change", llenarC);
+  const selP = h("select", { class: "f", "aria-label": "Medio" }, (S.cfg.medios.includes(x.p) ? S.cfg.medios : [x.p, ...S.cfg.medios]).map(p => h("option", { value: p, text: p, selected: p === x.p })));
+  const inF = h("input", { class: "f", type: "date", value: x.f, "aria-label": "Fecha" });
+  const inN = h("input", { class: "f", value: x.n || "", maxlength: "120", placeholder: "Detalle", "aria-label": "Detalle" });
+  const inD = h("input", { class: "f", inputmode: "decimal", value: x.d ? String(x.d).replace(".", ",") : "", placeholder: "Descuento ($)", "aria-label": "Descuento" });
+  abrir(h("div", {},
+    h("h3", { text: "Editar movimiento" + (x.q ? ` (cuota ${x.q})` : "") }),
+    h("div", { class: "grid2" }, selT, inM), h("div", { class: "grid2", style: "margin-top:8px" }, selC, selP),
+    h("div", { class: "grid2", style: "margin-top:8px" }, inF, inD), h("div", { style: "margin-top:8px" }, inN),
+    h("div", { class: "grid2", style: "margin-top:14px" },
+      h("button", { class: "btn dan", type: "button", text: "🗑️ Borrar", onclick: () => confirmar("¿Borrar este movimiento?", () => { borrarItem(x.id); toast("Borrado"); }) }),
+      h("button", { class: "btn pri", type: "button", text: "Guardar", onclick: () => {
+        const m = parseMonto(inM.value); if (!(m > 0)) { toast("Monto inválido"); return; }
+        const d = parseMonto(inD.value);
+        const nuevo = Object.assign({}, x, { t: selT.value, m, c: selC.value, p: selP.value, f: inF.value || x.f, n: inN.value.trim() });
+        if (d > 0) nuevo.d = d; else delete nuevo.d;
+        reemplazarItem(x.id, nuevo); cerrar(); toast("Guardado");
+      } })),
+    x.g ? h("button", { class: "btn sm dan", type: "button", style: "margin-top:10px;width:100%", text: "Borrar todas las cuotas de esta compra", onclick: () => confirmar("¿Borrar todas las cuotas?", () => { borrarGrupo(x.g); toast("Cuotas borradas"); }) }) : null,
+    h("button", { class: "btn sm", type: "button", style: "margin-top:8px;width:100%", text: "Cerrar", onclick: cerrar })));
+}
+
+/* ---------- ajustes ---------- */
+function vAjustes(app) {
+  const C = S.cfg;
+  // presupuestos
+  const presu = h("div");
+  C.catE.forEach(([c, ic]) => {
+    const inp = h("input", { class: "f", inputmode: "decimal", placeholder: "sin tope", value: C.presu[c] ? String(C.presu[c]) : "", "aria-label": "Tope de " + c });
+    inp.addEventListener("change", () => { const v = parseMonto(inp.value); if (v > 0) C.presu[c] = v; else delete C.presu[c]; Store.guardarCfg(); toast("Tope guardado"); });
+    presu.append(h("div", { class: "grid2", style: "align-items:center;margin-bottom:6px" }, h("span", { text: ic + " " + c }), inp));
+  });
+  const inObj = h("input", { class: "f", inputmode: "numeric", value: String(C.objAhorro || 0), "aria-label": "Objetivo de ahorro" });
+  inObj.addEventListener("change", () => { const v = Math.max(0, Math.min(90, parseInt(inObj.value, 10) || 0)); C.objAhorro = v; Store.guardarCfg(); toast("Objetivo: " + v + " %"); });
+
+  app.append(h("section", { class: "card" }, h("h2", { text: "🎯 Objetivo de ahorro y topes por categoría" }),
+    h("div", { class: "grid2", style: "align-items:center;margin-bottom:10px" }, h("b", { text: "Ahorrar (% de lo que entra)" }), inObj),
+    h("p", { class: "hint", text: "Poné cuánto querés gastar como máximo por mes en cada categoría. La app te avisa antes de pasarte." }), presu));
+
+  // fijos
+  const nF = h("input", { class: "f", placeholder: "Nombre (ej: Alquiler)", maxlength: "60" });
+  const mF = h("input", { class: "f", inputmode: "decimal", placeholder: "Monto" });
+  const tF = h("select", { class: "f" }, h("option", { value: "e", text: "Gasto fijo" }), h("option", { value: "i", text: "Ingreso fijo" }));
+  const cF = h("select", { class: "f" });
+  const llenarCF = () => { cF.textContent = ""; catsDe(tF.value).forEach(([c]) => cF.append(h("option", { value: c, text: c }))); };
+  llenarCF(); tF.addEventListener("change", llenarCF);
+  const pF = h("select", { class: "f" }, C.medios.map(p => h("option", { value: p, text: p })));
+  nF.addEventListener("change", () => { const t = norm(nF.value); const k = KW.find(([re]) => re.test(t)); if (k) { const esI = C.catI.some(c => c[0] === k[1]); tF.value = esI ? "i" : "e"; llenarCF(); if ([...cF.options].some(o => o.value === k[1])) cF.value = k[1]; } });
+  const dF = h("input", { class: "f", inputmode: "numeric", placeholder: "Día del mes (1-31)" });
+  app.append(h("section", { class: "card" }, h("h2", {}, "📌 Gastos e ingresos fijos", h("small", { text: "se cargan con un toque cada mes" })),
+    C.fijos.length ? h("ul", { class: "list" }, C.fijos.map(fj => h("li", { class: "mv", style: "cursor:default" },
+      h("div", { class: "ic " + (fj.t === "i" ? "i" : "e"), text: iconoCat(fj.c) }),
+      h("div", { class: "tx" }, h("div", { class: "t1", text: fj.n }), h("div", { class: "t2", text: `${fj.c} · ${fj.p} · día ${fj.dia || 1}` })),
+      h("div", { class: "am money", text: money(fj.m) }),
+      h("button", { class: "btn sm dan", type: "button", "aria-label": "Quitar " + fj.n, text: "✕", onclick: () => { C.fijos = C.fijos.filter(z => z.id !== fj.id); Store.guardarCfg(); render(); } })))) : h("p", { class: "hint", text: "Todavía no tenés fijos. Sumá alquiler, expensas, prepaga, seguro del auto, sueldo…" }),
+    h("div", { class: "grid2", style: "margin-top:10px" }, nF, mF), h("div", { class: "grid2", style: "margin-top:8px" }, tF, cF), h("div", { class: "grid2", style: "margin-top:8px" }, pF, dF),
+    h("button", { class: "btn", type: "button", style: "margin-top:8px;width:100%", text: "+ Agregar fijo", onclick: () => {
+      const m = parseMonto(mF.value), n = nF.value.trim(); if (!n || !(m > 0)) { toast("Completá nombre y monto"); return; }
+      C.fijos.push({ id: uid(), t: tF.value, n, m, c: cF.value, p: pF.value, dia: Math.max(1, Math.min(31, parseInt(dF.value, 10) || 1)) });
+      Store.guardarCfg(); render(); toast("Fijo agregado");
+    } })));
+
+  // categorías y medios
+  const txE = h("textarea", { class: "f", rows: "5", "aria-label": "Categorías de gasto" }); txE.value = C.catE.map(x => x[1] + " " + x[0]).join("\n");
+  const txI = h("textarea", { class: "f", rows: "3", "aria-label": "Categorías de ingreso" }); txI.value = C.catI.map(x => x[1] + " " + x[0]).join("\n");
+  const txM = h("textarea", { class: "f", rows: "3", "aria-label": "Medios de pago" }); txM.value = C.medios.join("\n");
+  const parseCats = t => t.split("\n").map(l => l.trim()).filter(Boolean).slice(0, 40).map(l => { const m = l.match(/^(\S+)\s+(.+)$/); return m && !/^[\p{L}\p{N}]/u.test(m[1]) ? [m[2].trim().slice(0, 40), m[1]] : [l.slice(0, 40), "•"]; });
+  app.append(h("section", { class: "card" }, h("h2", { text: "🏷️ Categorías y medios de pago" }),
+    h("p", { class: "hint", text: "Una por línea. Podés poner un emoji adelante. Los movimientos viejos conservan su categoría." }),
+    h("div", { class: "lbl", text: "Gastos" }), txE, h("div", { class: "lbl", text: "Ingresos" }), txI, h("div", { class: "lbl", text: "Medios (dejá «Crédito» para usar cuotas)" }), txM,
+    h("button", { class: "btn", type: "button", style: "margin-top:8px;width:100%", text: "Guardar categorías y medios", onclick: () => {
+      const e = parseCats(txE.value), i = parseCats(txI.value), md = txM.value.split("\n").map(s => s.trim().slice(0, 30)).filter(Boolean).slice(0, 15);
+      if (!e.length || !i.length || !md.length) { toast("Dejá al menos una de cada"); return; }
+      C.catE = e; C.catI = i; C.medios = md; Store.guardarCfg(); render(); toast("Guardado");
+    } })));
+
+  // respaldo
+  const file = h("input", { type: "file", accept: "application/json,.json", class: "hidden" });
+  file.addEventListener("change", async () => {
+    const f = file.files[0]; if (!f) return;
+    if (f.size > 5e6) { toast("Archivo demasiado grande"); return; }
+    try {
+      const d = JSON.parse(await f.text());
+      if (!d || typeof d.meses !== "object") throw new Error();
+      const items = Object.values(d.meses).flat().filter(validoItem);
+      const ids = new Set(todos().map(x => x.id)); const nuevos = items.filter(x => !ids.has(x.id));
+      if (d.cfg && typeof d.cfg === "object") { S.cfg = Object.assign(JSON.parse(JSON.stringify(CFG_DEF)), S.cfg, sanearCfg(d.cfg)); await Store.guardarCfg(); }
+      await agregarItems(nuevos); toast(`Importados ${nuevos.length} movimientos (${items.length - nuevos.length} ya estaban)`, 4000);
+    } catch (e) { toast("Ese archivo no es un respaldo válido de Mi Plata."); }
+    file.value = "";
+  });
+  let localInfo = null;
+  if (S.modo === "nube" || S.modo === "api") { try { const raw = localStorage.getItem(LS_KEY); if (raw) { const d = JSON.parse(raw); const n = Object.values(d.meses || {}).flat().length; if (n) localInfo = { d, n }; } } catch (e) {} }
+  const n = todos().length;
+  app.append(h("section", { class: "card" }, h("h2", { text: "💾 Respaldo y exportación" }),
+    h("p", { class: "hint", text: S.modo === "api" ? `Tus ${n} movimientos están en la planilla privada «Mi Plata · Datos» del Drive (hoja Movimientos, una fila por movimiento): los ves igual desde el celu o la PC y solo entra quien tenga tu PIN.` : S.modo === "nube" ? `Tus ${n} movimientos están en tu nube privada de Claude: los ves igual desde el celu o la PC, y solo vos tenés acceso.` : `Tus ${n} movimientos están guardados solo en este dispositivo. Exportá un respaldo cada tanto.` }),
+    h("div", { class: "row" },
+      h("button", { class: "btn sm", type: "button", text: "⬇️ Respaldo (JSON)", onclick: exportarJSON }),
+      h("button", { class: "btn sm", type: "button", text: "⬇️ Excel (CSV) completo", onclick: () => exportarCSV(null) }),
+      h("button", { class: "btn sm", type: "button", text: "⬆️ Importar respaldo", onclick: () => file.click() }), file),
+    localInfo ? h("button", { class: "btn sm", type: "button", style: "margin-top:8px", text: `Subir ${localInfo.n} movimientos guardados antes en este dispositivo`, onclick: async () => {
+      const ids = new Set(todos().map(x => x.id)); const nuevos = Object.values(localInfo.d.meses).flat().filter(validoItem).filter(x => !ids.has(x.id));
+      await agregarItems(nuevos); toast(nuevos.length + " movimientos subidos");
+    } }) : null));
+
+  const inBorrar = h("input", { class: "f", placeholder: "Escribí BORRAR", "aria-label": "Confirmación" });
+  app.append(h("section", { class: "card" }, h("h2", { text: "Zona de cuidado" }),
+    h("p", { class: "hint", text: "Borra todos los movimientos (la configuración queda). Exportá antes un respaldo." }),
+    h("div", { class: "grid2" }, inBorrar, h("button", { class: "btn dan", type: "button", text: "Borrar todo", onclick: async () => {
+      if (inBorrar.value.trim() !== "BORRAR") { toast("Escribí BORRAR para confirmar"); return; }
+      const ms = Object.keys(S.meses); S.meses = {}; render(); await Promise.resolve(Store.op({ accion: "borrarTodo", confirmar: "BORRAR" }, ms)).catch(() => {}); toast("Movimientos borrados");
+    } })),
+    h("p", { class: "hint", style: "margin-top:12px", text: `Mi Plata ${VERSION} · ${S.modo === "api" ? "Drive privado + PIN" : S.modo === "nube" ? "nube privada (solo el dueño)" : "modo local"} · sin publicidad, sin terceros.` })));
+  if (S.modo === "api") app.append(h("section", { class: "card" }, h("h2", { text: "🔐 Sesión" }),
+    h("p", { class: "hint", text: `Este equipo (${dispositivo()}) queda recordado 30 días sin uso.` + (Cola.lista.length ? ` Hay ${Cola.lista.length} cambios esperando conexión.` : "") }),
+    h("div", { class: "row" },
+      h("button", { class: "btn sm", type: "button", text: "🔄 Actualizar ahora", onclick: () => sincronizar().then(() => toast("Datos actualizados")) }),
+      h("button", { class: "btn sm", type: "button", text: "Cerrar sesión aquí", onclick: () => salir(false) }),
+      h("button", { class: "btn sm dan", type: "button", text: "Cerrar en todos los equipos", onclick: () => confirmar("¿Cerrar la sesión en todos los equipos?", () => salir(true)) }))));
+}
+async function salir(todas) {
+  if (Cola.lista.length) { toast("Esperá: hay cambios sin subir. Probá de nuevo con conexión."); return; }
+  try { await Api.llamar({ accion: "logout", todas }); } catch (e) {}
+  Api.setTok(""); try { localStorage.removeItem(LS_CACHE); } catch (e) {}
+  S.meses = {}; S.cfg = JSON.parse(JSON.stringify(CFG_DEF)); mostrarLogin(todas ? "Cerraste la sesión en todos los equipos." : "Sesión cerrada.");
+}
+function validoItem(x) {
+  return x && typeof x.id === "string" && x.id.length < 40 && /^\d{4}-\d{2}-\d{2}$/.test(x.f) && (x.t === "e" || x.t === "i") && typeof x.m === "number" && isFinite(x.m) && x.m > 0 && x.m < 1e12 && typeof x.c === "string" && typeof x.p === "string";
+}
+function sanearCfg(c) {
+  const o = {};
+  if (Array.isArray(c.catE)) o.catE = c.catE.filter(a => Array.isArray(a) && typeof a[0] === "string").slice(0, 40).map(a => [a[0].slice(0, 40), String(a[1] || "•").slice(0, 8)]);
+  if (Array.isArray(c.catI)) o.catI = c.catI.filter(a => Array.isArray(a) && typeof a[0] === "string").slice(0, 40).map(a => [a[0].slice(0, 40), String(a[1] || "•").slice(0, 8)]);
+  if (Array.isArray(c.medios)) o.medios = c.medios.filter(s => typeof s === "string").slice(0, 15).map(s => s.slice(0, 30));
+  if (c.presu && typeof c.presu === "object") { o.presu = {}; for (const k in c.presu) if (+c.presu[k] > 0) o.presu[String(k).slice(0, 40)] = +c.presu[k]; }
+  if (Array.isArray(c.fijos)) o.fijos = c.fijos.filter(f => f && typeof f.n === "string" && +f.m > 0).slice(0, 60).map(f => ({ id: String(f.id || uid()).slice(0, 40), t: f.t === "i" ? "i" : "e", n: f.n.slice(0, 60), m: +f.m, c: String(f.c || "Otros").slice(0, 40), p: String(f.p || "Efectivo").slice(0, 30), dia: Math.max(1, Math.min(31, +f.dia || 1)) }));
+  if (+c.objAhorro >= 0) o.objAhorro = Math.min(90, +c.objAhorro);
+  if (+c.saldoMP >= 0) o.saldoMP = Math.min(1e12, +c.saldoMP);
+  if (+c.tnaManual >= 0) o.tnaManual = Math.min(300, +c.tnaManual);
+  if ([3, 6, 12, 24].includes(+c.horiz)) o.horiz = +c.horiz;
+  if (+c.recorte >= 0) o.recorte = Math.min(50, +c.recorte);
+  if (+c.pctMP >= 0) o.pctMP = Math.min(100, +c.pctMP);
+  return o;
+}
+
+/* ---------- exportación ---------- */
+async function descargar(nombre, texto, tipo) {
+  try {
+    const dl = window.claude && window.claude.use ? await window.claude.use("downloads") : null;
+    if (dl) { await dl.save({ filename: nombre, data: texto }); toast("Listo: " + nombre); return; }
+  } catch (e) { if (e && /declin|cancel|reject/i.test(String(e.code || e.message))) { toast("Descarga cancelada"); return; } }
+  try {
+    const url = URL.createObjectURL(new Blob([texto], { type: tipo }));
+    const a = h("a", { href: url, download: nombre }); document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000); toast("Descargando " + nombre);
+  } catch (e) {
+    try { await navigator.clipboard.writeText(texto); toast("No se pudo descargar: lo copié al portapapeles"); } catch (e2) { toast("No se pudo descargar en este navegador."); }
+  }
+}
+const sello = () => { const d = new Date(); return isoDia(d) + "_" + pad(d.getHours()) + pad(d.getMinutes()); };
+function exportarJSON() { descargar(`MiPlata_respaldo_${sello()}.json`, JSON.stringify({ app: "MiPlata", v: VERSION, exportado: new Date().toISOString(), meses: S.meses, cfg: S.cfg }, null, 1), "application/json"); }
+function exportarCSV(m) {
+  const L = (m ? itemsMes(m) : todos().sort((a, b) => a.f.localeCompare(b.f)));
+  const esc = v => { let s = String(v == null ? "" : v); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const num = n => String(Math.round(n * 100) / 100).replace(".", ",");
+  const filas = [["Fecha", "Tipo", "Categoría", "Medio", "Detalle", "Ingreso", "Egreso", "Neto", "Descuento", "Cuota", "Fijo"]];
+  L.forEach(x => filas.push([x.f.split("-").reverse().join("/"), x.t === "i" ? "Ingreso" : "Egreso", x.c, x.p, x.n || "", x.t === "i" ? num(x.m) : "", x.t === "e" ? num(x.m) : "", num(x.t === "i" ? x.m : -x.m), x.d ? num(x.d) : "", x.q || "", x.fx ? "Sí" : ""]));
+  const csv = "﻿" + "sep=;\n" + filas.map(r => r.map((v, i) => i >= 5 && i <= 8 ? v : esc(v)).join(";")).join("\r\n");
+  descargar(`MiPlata_${m || "historial"}_${sello()}.csv`, csv, "text/csv;charset=utf-8");
+}
+
+/* ---------- arranque ---------- */
+document.querySelectorAll("nav.tabs button").forEach(b => b.addEventListener("click", () => { S.tab = b.dataset.tab; if (S.tab !== "hoy" && S.tab !== "ajustes") {} render(); window.scrollTo(0, 0); }));
+$("#btnOjo").addEventListener("click", () => { const o = document.body.classList.toggle("oculto"); guardarUI({ oculto: o }); toast(o ? "Montos ocultos" : "Montos visibles"); });
+$("#dlg").addEventListener("click", e => { if (e.target.id === "dlg") cerrar(); });
+const d0 = new Date(); $("#hdrSub").textContent = DIAS[d0.getDay()] + " " + d0.getDate() + " de " + MESES[d0.getMonth()];
+render();
+Store.iniciar();
+Rend.obtener().then(() => { if (S.modo !== "login") render(); });
+window.addEventListener("online", () => { if (S.modo === "api") Cola.vaciar().then(sincronizar); });
+document.addEventListener("visibilitychange", () => { if (!document.hidden && S.modo === "api" && Date.now() - (S.ultimaSync || 0) > 60000) sincronizar(); });
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+// Si cambia el día con la app abierta, refrescar
+setInterval(() => { const m = mesDe(hoy()); if (S._dia !== hoy()) { S._dia = hoy(); if (S.mesSel < m && S.tab === "hoy") S.mesSel = m; render(); } }, 60000);
+S._dia = hoy();
+</script>
+</body>
+</html>
