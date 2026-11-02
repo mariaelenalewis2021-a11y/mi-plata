@@ -150,6 +150,7 @@ table.t td:last-child{text-align:right;white-space:nowrap}
       <h1>🌸 Mi Plata</h1>
       <div class="sub" id="hdrSub">Ingresos y egresos diarios</div>
     </div>
+    <button class="icobtn hidden" id="btnInstalar" type="button" aria-label="Instalar la app en el celular" title="Instalar en el celular" style="width:auto;padding:0 12px;font-size:14px;font-weight:700;margin-right:6px">📲 Instalar</button>
     <button class="icobtn" id="btnOjo" type="button" aria-label="Ocultar o mostrar montos" title="Ocultar montos">👁️</button>
   </div>
   <div class="wrap"><span class="status" id="estado"><i></i><span>Conectando…</span></span></div>
@@ -175,7 +176,7 @@ if (window.top !== window.self) { document.documentElement.style.display = "none
    artifact de Claude; si no, en este dispositivo (localStorage).
    Sin innerHTML con datos: todo se pinta con textContent.
    ============================================================ */
-const VERSION = "1.3";
+const VERSION = "1.4";
 const LS_TOK = "miplata.tok", LS_CACHE = "miplata.cache", LS_COLA = "miplata.cola", LS_ACT = "miplata.act";
 const LS_KEY = "miplata.v1";
 const LS_UI = "miplata.ui";
@@ -301,7 +302,7 @@ const S = {
   form: { t: "e", c: null, p: null },
   filtro: { q: "", c: "", t: "" }
 };
-try { const u = JSON.parse(localStorage.getItem(LS_UI) || "{}"); if (u.oculto) document.body.classList.add("oculto"); if (u.medio) S.form.p = u.medio; } catch (e) {}
+try { const u = JSON.parse(localStorage.getItem(LS_UI) || "{}"); if (u.instalarVisto) S._instalarVisto = true; if (u.oculto) document.body.classList.add("oculto"); if (u.medio) S.form.p = u.medio; } catch (e) {}
 function guardarUI(p) { try { const u = JSON.parse(localStorage.getItem(LS_UI) || "{}"); Object.assign(u, p); localStorage.setItem(LS_UI, JSON.stringify(u)); } catch (e) {} }
 
 const itemsMes = m => S.meses[m] || [];
@@ -519,6 +520,7 @@ function vLogin(app) {
     h("p", { class: "hint", text: S.alta ? "De 6 a 8 números, que no sea repetido (111111) ni correlativo (123456). No lo compartas por chat." : S.sinPin ? "El servidor todavía no tiene PIN: hay que habilitar el alta desde el editor (prepararMiPlata)." : "Tus datos están en una planilla privada del Drive. Este equipo queda recordado 30 días." }),
     S.loginMsg ? h("p", { class: "tip w", text: S.loginMsg }) : null,
     pin, S.alta ? pin2 : null, btn));
+  const ti = tarjetaInstalar(); if (ti) app.append(ti);
   setTimeout(() => pin.focus(), 50);
 }
 
@@ -700,6 +702,7 @@ function tarjetaResumen(m) {
 }
 function vHoy(app) {
   const t = hoy();
+  if (Instalar.mostrar() && !S._instalarVisto) { const ti = tarjetaInstalar(); if (ti) { ti.append(h("button", { class: "icobtn", type: "button", "aria-label": "Ocultar", style: "background:transparent;color:var(--mut);width:28px", text: "✕", onclick: () => { S._instalarVisto = true; guardarUI({ instalarVisto: true }); render(); } })); app.append(ti); } }
   app.append(tarjetaResumen(mesDe(t)));
   // --- formulario de alta ---
   const F = S.form;
@@ -1272,8 +1275,47 @@ function exportarCSV(m) {
   descargar(`MiPlata_${m || "historial"}_${sello()}.csv`, csv, "text/csv;charset=utf-8");
 }
 
+/* ---------- instalar en el celular (PWA) ---------- */
+const Instalar = {
+  evento: null,
+  instalada: () => window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true,
+  ios: () => /iPhone|iPad|iPod/i.test(navigator.userAgent),
+  mostrar() { return !this.instalada(); },
+  async ejecutar() {
+    if (this.instalada()) { toast("Ya la tenés instalada 🌸"); return; }
+    if (this.evento) {
+      this.evento.prompt();
+      try { const r = await this.evento.userChoice; if (r && r.outcome === "accepted") toast("¡Listo! Mi Plata quedó en tu pantalla de inicio 🌸", 4000); } catch (e) {}
+      this.evento = null; actualizarBotonInstalar(); return;
+    }
+    const pasos = this.ios()
+      ? [["1", "Abrí este link en Safari", "En iPhone solo Safari permite instalar apps web."], ["2", "Tocá el botón Compartir", "El cuadrado con la flecha hacia arriba, abajo en la pantalla."], ["3", "Elegí «Agregar a inicio»", "Confirmá con «Agregar»: aparece el ícono de la flor."]]
+      : [["1", "Abrí este link en Chrome", "Si lo abriste desde WhatsApp u otra app, tocá ⋮ → «Abrir en Chrome»."], ["2", "Tocá el menú ⋮", "Arriba a la derecha."], ["3", "Elegí «Instalar app» o «Agregar a la pantalla principal»", "Confirmá: aparece el ícono de la flor y se abre como una app."]];
+    abrir(h("div", {},
+      h("h3", { text: "📲 Instalar Mi Plata" }),
+      h("p", { class: "hint", text: "Queda como una app más: ícono propio, pantalla completa y abre en un toque. Tus datos siguen en tu Drive privado con tu PIN." }),
+      pasos.map(([n, t, d]) => h("div", { class: "tip" }, h("b", { text: n }), h("div", {}, h("b", { text: t }), h("div", { class: "hint", text: d })))),
+      h("div", { class: "tip g" }, h("span", { text: "🔗" }), h("span", { text: location.origin + location.pathname })),
+      h("div", { class: "grid2", style: "margin-top:10px" },
+        h("button", { class: "btn", type: "button", text: "Copiar link", onclick: async () => { try { await navigator.clipboard.writeText(location.origin + location.pathname); toast("Link copiado"); } catch (e) { toast("Copialo desde la barra de direcciones"); } } }),
+        h("button", { class: "btn pri", type: "button", text: "Entendido", onclick: cerrar }))));
+  }
+};
+function actualizarBotonInstalar() { const b = $("#btnInstalar"); if (b) b.classList.toggle("hidden", !Instalar.mostrar()); }
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); Instalar.evento = e; actualizarBotonInstalar(); if (S.modo === "login") render(); });
+window.addEventListener("appinstalled", () => { Instalar.evento = null; actualizarBotonInstalar(); toast("¡Mi Plata instalada! 🌸", 4000); });
+function tarjetaInstalar() {
+  if (!Instalar.mostrar()) return null;
+  return h("section", { class: "card mp", style: "display:flex;gap:12px;align-items:center" },
+    h("div", { style: "font-size:34px", text: "📲" }),
+    h("div", { style: "flex:1" }, h("b", { text: "Instalala en tu celular" }), h("div", { class: "hint", text: "Ícono en la pantalla de inicio y abre como una app." })),
+    h("button", { class: "btn pri", type: "button", style: "width:auto", text: "Instalar", onclick: () => Instalar.ejecutar() }));
+}
+
 /* ---------- arranque ---------- */
 document.querySelectorAll("nav.tabs button").forEach(b => b.addEventListener("click", () => { S.tab = b.dataset.tab; if (S.tab !== "hoy" && S.tab !== "ajustes") {} render(); window.scrollTo(0, 0); }));
+$("#btnInstalar").addEventListener("click", () => Instalar.ejecutar());
+actualizarBotonInstalar();
 $("#btnOjo").addEventListener("click", () => { const o = document.body.classList.toggle("oculto"); guardarUI({ oculto: o }); toast(o ? "Montos ocultos" : "Montos visibles"); });
 $("#dlg").addEventListener("click", e => { if (e.target.id === "dlg") cerrar(); });
 const d0 = new Date(); $("#hdrSub").textContent = DIAS[d0.getDay()] + " " + d0.getDate() + " de " + MESES[d0.getMonth()];
